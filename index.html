@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Cat Live | Pro Edition</title>
+    <title>AI Cat Live | Ultra Realistic</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -22,135 +22,108 @@
     <style>
         body { font-family: 'Inter', 'SolaimanLipi', Arial, sans-serif; overflow: hidden; height: 100dvh; background-color: #f8fafc; }
         
-        /* Cat Animations */
-        .cat-ear { transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: bottom center; }
-        .is-listening .cat-ear { transform: rotate(15deg); }
-        
-        /* Mouth Fix: Uses Ellipse for natural movement */
-        #cat-mouth { transition: ry 0.1s ease; }
-        
-        /* Mood Visuals */
-        .eyebrow { transition: all 0.4s ease; opacity: 0; }
-        .mood-angry .eyebrow { opacity: 1; transform: translateY(2px) rotate(15deg); }
-        .mood-sad .eyebrow { opacity: 1; transform: translateY(-2px) rotate(-10deg); }
-        .mood-excited #svg-cat { animation: bounce 0.5s infinite; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        /* Realistic Ear Movements */
+        .cat-ear { transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: bottom center; }
+        .mood-sad .cat-ear { transform: rotate(-20deg) translateY(5px); }
+        .mood-angry .cat-ear { transform: rotate(10deg) scaleY(1.1); }
+        .is-listening .cat-ear { animation: twitch 2s infinite; }
+        @keyframes twitch { 0%, 90%, 100% { transform: rotate(0); } 95% { transform: rotate(10deg); } }
 
-        /* Draggable Caption Box */
-        #speech-bubble { 
-            position: absolute;
-            z-index: 100;
-            cursor: grab;
-            user-select: none;
-            touch-action: none;
-            transition: opacity 0.3s, transform 0.3s;
-        }
-        #speech-bubble:active { cursor: grabbing; scale: 1.02; }
-        .caption-hidden { opacity: 0 !important; pointer-events: none !important; transform: scale(0.9); }
-        
-        .drag-handle {
-            width: 30px;
-            height: 4px;
-            background: rgba(0,0,0,0.1);
-            border-radius: 10px;
-            margin: 0 auto 10px;
-        }
+        /* Eye Blinking */
+        .eye-lid { transition: all 0.1s ease-in-out; transform-origin: center; }
+        .blink .eye-lid { transform: scaleY(0.1); }
+
+        /* Body Animations based on Emotion */
+        #svg-cat { transition: all 0.5s ease; transform-origin: bottom center; }
+        .mood-excited #svg-cat { animation: bounce-pro 0.4s infinite alternate ease-in-out; }
+        .mood-angry #svg-cat { animation: shake 0.1s infinite; }
+        .mood-thinking #svg-cat { animation: sway 3s infinite ease-in-out; }
+        .mood-sad #svg-cat { transform: scale(0.95) translateY(10px); opacity: 0.8; }
+
+        @keyframes bounce-pro { from { transform: translateY(0) scaleX(1); } to { transform: translateY(-20px) scaleX(0.95); } }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(1px, -1px); } }
+        @keyframes sway { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+
+        /* Draggable Box */
+        #speech-bubble { position: absolute; z-index: 100; cursor: grab; user-select: none; touch-action: none; }
+        #speech-bubble:active { cursor: grabbing; }
+        .caption-hidden { opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body class="dark:bg-darker text-gray-900 dark:text-gray-100">
 
     <div id="loading" class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center gap-4">
         <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p class="font-bold text-primary italic">বিড়ালটি আসছে...</p>
+        <p class="font-bold text-primary italic">বিড়ালটি প্রস্তুত হচ্ছে...</p>
     </div>
 
     <div id="app" class="hidden flex h-full relative overflow-hidden">
         
         <aside id="sidebar" class="absolute lg:relative z-[200] w-80 h-full bg-white dark:bg-dark border-r border-gray-200 dark:border-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col shadow-2xl">
             <div class="p-6 border-b dark:border-gray-800 flex justify-between items-center">
-                <span class="font-black text-xl text-primary italic">AI CAT <span class="text-gray-400">PRO</span></span>
+                <span class="font-black text-xl text-primary italic">CAT <span class="text-gray-400">CORE</span></span>
                 <button onclick="toggleSidebar()" class="lg:hidden p-2"><i class="fas fa-times"></i></button>
             </div>
             
             <div class="flex-1 overflow-y-auto p-6 space-y-6">
                 <div>
-                    <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400">OpenRouter API Key</label>
+                    <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400">OpenRouter Key</label>
                     <input type="password" id="api-key" placeholder="sk-or-..." class="w-full mt-1 p-3 text-sm rounded-xl bg-gray-100 dark:bg-gray-800 border-none">
                 </div>
-
                 <div>
-                    <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Model Profile</label>
+                    <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Model ID</label>
                     <input type="text" id="model-profile" placeholder="google/gemini-flash-1.5-8b" class="w-full mt-1 p-3 text-sm rounded-xl bg-gray-100 dark:bg-gray-800 border-none">
                 </div>
-                
-                <div class="space-y-3">
-                    <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Voice Selection</label>
-                    <select id="voice-select" class="w-full p-3 text-xs rounded-xl bg-gray-100 dark:bg-gray-800 border-none outline-none"></select>
-                </div>
-
                 <div>
-                    <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Language</label>
-                    <select id="lang-selector" onchange="changeLanguage()" class="w-full mt-1 p-3 text-sm rounded-xl bg-gray-100 dark:bg-gray-800 border-none">
-                        <option value="bn-BD">Bengali (বাংলা)</option>
-                        <option value="en-US">English (US)</option>
-                    </select>
+                    <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Voice</label>
+                    <select id="voice-select" class="w-full p-3 text-xs rounded-xl bg-gray-100 dark:bg-gray-800 border-none"></select>
                 </div>
-
-                <button onclick="saveAllSettings()" class="w-full bg-primary py-4 rounded-2xl text-white font-bold shadow-lg">Save Changes</button>
+                <button onclick="saveAllSettings()" class="w-full bg-primary py-4 rounded-2xl text-white font-bold">Save Settings</button>
             </div>
         </aside>
 
         <main class="flex-1 flex flex-col relative bg-slate-50 dark:bg-darker transition-colors duration-500">
-            
             <header class="h-16 flex items-center justify-between px-6 z-40">
                 <button onclick="toggleSidebar()" class="p-2 text-gray-500"><i class="fas fa-bars-staggered"></i></button>
-                <div class="flex items-center gap-3">
-                    <button onclick="toggleCaptions()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 text-[11px] font-bold transition-all">
-                        <i id="hide-icon" class="fas fa-eye text-primary"></i>
-                        <span id="hide-text">Hide Captions</span>
-                    </button>
-                    <button onclick="toggleTheme()" class="w-10 h-10 flex items-center justify-center text-gray-400"><i class="fas fa-circle-half-stroke"></i></button>
-                </div>
+                <button onclick="toggleCaptions()" class="px-4 py-2 rounded-xl bg-white dark:bg-gray-800 shadow-sm border text-[11px] font-bold">
+                    <i id="hide-icon" class="fas fa-eye text-primary mr-2"></i>Captions
+                </button>
             </header>
 
-            <div id="live-interface" class="flex-1 flex relative items-center justify-center overflow-hidden">
-                
+            <div class="flex-1 flex relative items-center justify-center overflow-hidden">
                 <div id="speech-bubble" style="left: 24px; top: 100px;">
-                    <div class="p-5 rounded-[2rem] bg-white/90 dark:bg-dark/90 backdrop-blur-xl shadow-2xl border border-white/50 dark:border-gray-700 min-w-[200px]">
-                        <div class="drag-handle"></div>
+                    <div class="p-5 rounded-[2.5rem] bg-white/90 dark:bg-dark/90 backdrop-blur-xl shadow-2xl border border-white/50 dark:border-gray-700 min-w-[220px]">
+                        <div class="w-8 h-1 bg-gray-200 dark:bg-gray-700 mx-auto mb-4 rounded-full"></div>
                         <p id="user-transcript" class="text-primary font-bold text-lg mb-1"></p>
                         <p id="ai-caption" class="text-gray-600 dark:text-gray-400 text-sm italic"></p>
-                        <div id="mood-label" class="mt-2 text-[9px] font-black uppercase tracking-tighter opacity-30">Neutral</div>
+                        <div id="mood-label" class="mt-2 text-[9px] font-black uppercase tracking-tighter opacity-40">Neutral</div>
                     </div>
                 </div>
 
                 <div id="cat-container" class="relative group">
-                    <div id="glow" class="absolute inset-0 bg-primary/20 blur-[120px] rounded-full transition-all duration-1000 opacity-0 group-[.is-listening]:opacity-100 group-[.is-talking]:opacity-100"></div>
+                    <div id="glow" class="absolute inset-0 bg-primary/20 blur-[120px] rounded-full transition-all duration-1000"></div>
                     
-                    <svg id="svg-cat" viewBox="0 0 200 200" class="w-64 h-64 lg:w-[380px] lg:h-[380px] relative z-10 drop-shadow-2xl">
+                    <svg id="svg-cat" viewBox="0 0 200 200" class="w-64 h-64 lg:w-[400px] lg:h-[400px] relative z-10">
                         <path id="ear-l" d="M55 45 L35 10 L75 35 Z" fill="currentColor" class="cat-ear text-indigo-600" />
                         <path id="ear-r" d="M145 45 L165 10 L125 35 Z" fill="currentColor" class="cat-ear text-indigo-600" />
                         <circle id="cat-head" cx="100" cy="100" r="85" fill="currentColor" class="text-indigo-500" />
                         <circle cx="100" cy="110" r="65" fill="#e0e7ff" />
-                        <path d="M70 95 Q80 90 90 95" stroke="#1e293b" stroke-width="2" fill="none" class="eyebrow" />
-                        <path d="M110 95 Q120 90 130 95" stroke="#1e293b" stroke-width="2" fill="none" class="eyebrow" />
-                        <g><circle cx="80" cy="105" r="5" fill="#1e293b" /><circle cx="120" cy="105" r="5" fill="#1e293b" /></g>
+                        
+                        <g id="eyes">
+                            <circle class="eye-lid" cx="80" cy="105" r="6" fill="#1e293b" />
+                            <circle class="eye-lid" cx="120" cy="105" r="6" fill="#1e293b" />
+                        </g>
+
                         <ellipse id="cat-mouth" cx="100" cy="135" rx="12" ry="1" fill="#1e293b" />
                     </svg>
                 </div>
 
-                <div class="absolute bottom-12 left-0 right-0 flex flex-col items-center gap-6 z-40">
-                    <div class="flex items-center gap-6">
-                        <button id="mic-btn" onclick="handleMicToggle()" class="w-20 h-20 rounded-full bg-white dark:bg-gray-800 shadow-2xl flex items-center justify-center text-2xl border-4 border-gray-50 active:scale-95 transition-all">
-                            <i id="mic-icon" class="fas fa-microphone text-gray-300"></i>
-                        </button>
-                        <button id="stop-btn" onclick="panicStop()" class="hidden w-16 h-16 rounded-full bg-red-500 text-white flex items-center justify-center text-xl shadow-lg active:scale-90">
-                            <i class="fas fa-stop"></i>
-                        </button>
-                    </div>
+                <div class="absolute bottom-12 left-0 right-0 flex flex-col items-center gap-6">
+                    <button id="mic-btn" onclick="handleMicToggle()" class="w-20 h-20 rounded-full bg-white dark:bg-gray-800 shadow-2xl flex items-center justify-center text-2xl border-4 border-white active:scale-90 transition-all">
+                        <i id="mic-icon" class="fas fa-microphone text-gray-300"></i>
+                    </button>
                     <div id="status-chip" class="px-5 py-1.5 rounded-full bg-white dark:bg-gray-800 shadow-sm text-[10px] font-black uppercase tracking-widest text-gray-400">Offline</div>
                 </div>
-
             </div>
         </main>
     </div>
@@ -166,8 +139,7 @@
             config: {
                 key: localStorage.getItem('cat_key') || '',
                 model: localStorage.getItem('cat_model') || 'google/gemini-flash-1.5-8b',
-                voiceName: localStorage.getItem('cat_voice_name') || '',
-                pitch: 1.2
+                voiceName: localStorage.getItem('cat_voice_name') || ''
             }
         };
 
@@ -182,77 +154,44 @@
         function init() {
             setupRecognition();
             setupDraggable();
+            startBlinkCycle();
             window.speechSynthesis.onvoiceschanged = populateVoices;
-            
             document.getElementById('api-key').value = STATE.config.key;
             document.getElementById('model-profile').value = STATE.config.model;
-            document.getElementById('lang-selector').value = STATE.lang;
-
             setTimeout(() => {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('app').classList.remove('hidden');
             }, 1000);
         }
 
-        // --- DRAGGABLE BOX LOGIC ---
+        // --- REALISTIC BLINKING ---
+        function startBlinkCycle() {
+            const eyes = document.getElementById('eyes');
+            setInterval(() => {
+                if (Math.random() > 0.3) {
+                    eyes.classList.add('blink');
+                    setTimeout(() => eyes.classList.remove('blink'), 150);
+                }
+            }, 4000);
+        }
+
+        // --- DRAGGABLE ---
         function setupDraggable() {
             const bubble = document.getElementById('speech-bubble');
-            let x = 0, y = 0, mouseX = 0, mouseY = 0;
-
+            let offsetX, offsetY;
             bubble.onmousedown = (e) => {
-                e.preventDefault();
-                mouseX = e.clientX;
-                mouseY = e.clientY;
+                offsetX = e.clientX - bubble.offsetLeft;
+                offsetY = e.clientY - bubble.offsetTop;
                 document.onmousemove = (e) => {
-                    x = mouseX - e.clientX;
-                    y = mouseY - e.clientY;
-                    mouseX = e.clientX;
-                    mouseY = e.clientY;
-                    bubble.style.top = (bubble.offsetTop - y) + "px";
-                    bubble.style.left = (bubble.offsetLeft - x) + "px";
+                    bubble.style.left = (e.clientX - offsetX) + 'px';
+                    bubble.style.top = (e.clientY - offsetY) + 'px';
                 };
-                document.onmouseup = () => {
-                    document.onmousemove = null;
-                    document.onmouseup = null;
-                };
-            };
-            
-            // Mobile Support
-            bubble.ontouchstart = (e) => {
-                mouseX = e.touches[0].clientX;
-                mouseY = e.touches[0].clientY;
-                bubble.ontouchmove = (e) => {
-                    x = mouseX - e.touches[0].clientX;
-                    y = mouseY - e.touches[0].clientY;
-                    mouseX = e.touches[0].clientX;
-                    mouseY = e.touches[0].clientY;
-                    bubble.style.top = (bubble.offsetTop - y) + "px";
-                    bubble.style.left = (bubble.offsetLeft - x) + "px";
-                };
+                document.onmouseup = () => document.onmousemove = null;
             };
         }
 
-        // --- MOUTH FIX: NATURAL MOVEMENT ---
-        let mouthInterval;
-        function animateMouth(start) {
-            const mouth = document.getElementById('cat-mouth');
-            if (!start) {
-                clearInterval(mouthInterval);
-                mouth.setAttribute('ry', '1');
-                return;
-            }
-            mouthInterval = setInterval(() => {
-                const talkHeight = Math.random() * 8 + 2;
-                mouth.setAttribute('ry', talkHeight);
-            }, 100);
-        }
-
-        function populateVoices() {
-            STATE.voices = STATE.synth.getVoices();
-            const select = document.getElementById('voice-select');
-            select.innerHTML = STATE.voices.map(v => `<option value="${v.name}" ${v.name === STATE.config.voiceName ? 'selected' : ''}>${v.name}</option>`).join('');
-        }
-
+        // --- MOUTH & MOOD ---
+        let mouthInt;
         function updateMood(mood) {
             const config = MOODS[mood] || MOODS.happy;
             document.getElementById('cat-container').className = 'relative group mood-' + mood;
@@ -264,46 +203,42 @@
         }
 
         async function processCommand(text) {
-            if (!STATE.config.key) return alert("Please enter OpenRouter Key!");
+            if (!STATE.config.key) return alert("API Key missing!");
             STATE.recognition.stop();
             updateMood('thinking');
 
-            const prompt = `You are a human-like cat. Use 1 sentence. Start with a mood: [HAPPY], [SAD], [EXCITED], [ANGRY], or [THINKING]. Language: ${STATE.lang}`;
-
+            const prompt = `You are a human-like cat. Use 1 short sentence. Start with mood: [HAPPY], [SAD], [EXCITED], [ANGRY], or [THINKING]. Lang: ${STATE.lang}`;
+            
             try {
                 const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: { "Authorization": `Bearer ${STATE.config.key}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        model: STATE.config.model,
-                        messages: [{ role: 'system', content: prompt }, { role: 'user', content: text }]
-                    })
+                    body: JSON.stringify({ model: STATE.config.model, messages: [{ role: 'system', content: prompt }, { role: 'user', content: text }] })
                 });
                 const data = await res.json();
-                const rawReply = data.choices[0].message.content;
-                const moodMatch = rawReply.match(/\[(.*?)\]/);
-                const mood = moodMatch ? moodMatch[1].toLowerCase() : 'happy';
-                const cleanReply = rawReply.replace(/\[.*?\]/, '').trim();
-
-                document.getElementById('ai-caption').innerText = cleanReply;
+                const raw = data.choices[0].message.content;
+                const mood = (raw.match(/\[(.*?)\]/) || [null, 'happy'])[1].toLowerCase();
+                const clean = raw.replace(/\[.*?\]/, '').trim();
+                
+                document.getElementById('ai-caption').innerText = clean;
                 updateMood(mood);
-                speak(cleanReply);
+                speak(clean);
             } catch (e) { startRec(); }
         }
 
         function speak(text) {
             STATE.isSpeaking = true;
             document.getElementById('cat-container').classList.add('is-talking');
-            animateMouth(true);
+            mouthInt = setInterval(() => document.getElementById('cat-mouth').setAttribute('ry', Math.random() * 10 + 1), 100);
             
             const utt = new SpeechSynthesisUtterance(text);
             utt.lang = STATE.lang;
-            utt.pitch = STATE.config.pitch;
             utt.voice = STATE.voices.find(v => v.name === STATE.config.voiceName) || null;
             utt.onend = () => {
                 STATE.isSpeaking = false;
                 document.getElementById('cat-container').classList.remove('is-talking');
-                animateMouth(false);
+                clearInterval(mouthInt);
+                document.getElementById('cat-mouth').setAttribute('ry', '1');
                 if (STATE.isActive) startRec();
             };
             STATE.synth.speak(utt);
@@ -316,16 +251,10 @@
             STATE.recognition.interimResults = true;
             STATE.recognition.lang = STATE.lang;
             STATE.recognition.onresult = (e) => {
-                let interim = '', final = '';
-                for (let i = e.resultIndex; i < e.results.length; ++i) {
-                    if (e.results[i].isFinal) final += e.results[i][0].transcript;
-                    else interim += e.results[i][0].transcript;
-                }
-                document.getElementById('user-transcript').innerText = interim;
-                if (final) {
-                    document.getElementById('user-transcript').innerText = final;
-                    setTimeout(() => { if(final.trim()) processCommand(final); }, 1000);
-                }
+                let final = '';
+                for (let i = e.resultIndex; i < e.results.length; ++i) if (e.results[i].isFinal) final += e.results[i][0].transcript;
+                document.getElementById('user-transcript').innerText = final;
+                if (final) setTimeout(() => { if(final.trim()) processCommand(final); }, 1000);
             };
             STATE.recognition.onend = () => { if(STATE.isActive && !STATE.isSpeaking) STATE.recognition.start(); };
         }
@@ -338,7 +267,6 @@
                 document.getElementById('mic-icon').className = "fas fa-waveform text-primary animate-pulse";
                 document.getElementById('status-chip').innerText = "Listening";
                 document.getElementById('cat-container').classList.add('is-listening');
-                document.getElementById('stop-btn').classList.remove('hidden');
             } catch(e){}
         }
 
@@ -346,10 +274,8 @@
             STATE.isActive = false;
             STATE.synth.cancel();
             STATE.recognition.stop();
-            animateMouth(false);
             document.getElementById('cat-container').className = 'relative group';
             document.getElementById('mic-icon').className = "fas fa-microphone text-gray-300";
-            document.getElementById('stop-btn').classList.add('hidden');
             document.getElementById('status-chip').innerText = "Offline";
         }
 
@@ -361,24 +287,16 @@
             localStorage.setItem('cat_model', STATE.config.model);
             localStorage.setItem('cat_voice_name', STATE.config.voiceName);
             toggleSidebar();
-            alert("Settings Applied!");
         }
 
-        function toggleCaptions() {
-            const bubble = document.getElementById('speech-bubble');
-            bubble.classList.toggle('caption-hidden');
-            document.getElementById('hide-icon').className = bubble.classList.contains('caption-hidden') ? 'fas fa-eye-slash text-gray-400' : 'fas fa-eye text-primary';
+        function populateVoices() {
+            STATE.voices = STATE.synth.getVoices();
+            document.getElementById('voice-select').innerHTML = STATE.voices.map(v => `<option value="${v.name}">${v.name}</option>`).join('');
         }
 
+        function toggleCaptions() { document.getElementById('speech-bubble').classList.toggle('caption-hidden'); }
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); }
         function toggleTheme() { document.documentElement.classList.toggle('dark'); }
-        function changeLanguage() {
-            STATE.lang = document.getElementById('lang-selector').value;
-            localStorage.setItem('cat_lang', STATE.lang);
-            if (STATE.recognition) STATE.recognition.lang = STATE.lang;
-            panicStop();
-        }
-
         window.onload = init;
     </script>
 </body>
