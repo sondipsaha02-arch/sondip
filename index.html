@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Cat Live | Bangla Human-Like</title>
+    <title>AI Cat Live | Left Caption Edition</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -21,9 +21,6 @@
 
     <style>
         body { font-family: 'Inter', 'SolaimanLipi', Arial, sans-serif; overflow: hidden; height: 100dvh; background-color: #f8fafc; }
-        .dvh-screen { height: 100dvh; }
-        
-        #loading { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 1rem; }
         
         /* Cat Animation States */
         .cat-ear { transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: bottom center; }
@@ -35,71 +32,87 @@
         .mic-active-ring { animation: ring-pulse 2s infinite; }
         @keyframes ring-pulse { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.5); opacity: 0; } }
 
-        /* Smooth Hide Transition */
-        #speech-bubble { transition: all 0.3s ease; }
-        .caption-hidden { opacity: 0; transform: translateY(-20px); pointer-events: none; }
+        /* Left Side Caption Styles */
+        #speech-bubble { 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            max-width: 320px;
+        }
+        .caption-hidden { 
+            opacity: 0; 
+            transform: translateX(-40px); 
+            pointer-events: none; 
+        }
+
+        /* Mobile Adjustments for Left Caption */
+        @media (max-width: 768px) {
+            #speech-bubble {
+                max-width: 80%;
+                left: 1rem;
+                top: 5rem;
+            }
+        }
     </style>
 </head>
 <body class="dark:bg-darker text-gray-900 dark:text-gray-100">
 
-    <div id="loading">
+    <div id="loading" class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center gap-4">
         <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p class="font-bold text-primary">বিড়ালটি জেগে উঠছে...</p>
+        <p class="font-bold text-primary">বিড়ালটি প্রস্তুত হচ্ছে...</p>
     </div>
 
-    <div id="app" class="hidden flex h-full dvh-screen relative overflow-hidden">
+    <div id="app" class="hidden flex h-full relative overflow-hidden">
         
-        <aside id="sidebar" class="absolute lg:relative z-40 w-80 h-full bg-white dark:bg-dark border-r border-gray-200 dark:border-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col shadow-2xl lg:shadow-none">
-            <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                <span class="font-black text-xl tracking-tight text-primary italic">AI CAT <span class="text-gray-400">LIVE</span></span>
+        <aside id="sidebar" class="absolute lg:relative z-50 w-80 h-full bg-white dark:bg-dark border-r border-gray-200 dark:border-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col">
+            <div class="p-6 border-b dark:border-gray-800 flex justify-between items-center">
+                <span class="font-black text-xl text-primary italic">AI CAT <span class="text-gray-400">LIVE</span></span>
                 <button onclick="toggleSidebar()" class="lg:hidden p-2"><i class="fas fa-times"></i></button>
             </div>
             
-            <div class="flex-1 overflow-y-auto p-6 space-y-6">
-                <div class="space-y-2">
+            <div class="p-6 space-y-6">
+                <div>
                     <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400">OpenRouter Key</label>
-                    <input type="password" id="api-key" placeholder="sk-or-..." class="w-full p-3 text-sm rounded-xl bg-gray-50 dark:bg-gray-800 border-none focus:ring-2 focus:ring-primary">
+                    <input type="password" id="api-key" placeholder="sk-or-..." class="w-full mt-1 p-3 text-sm rounded-xl bg-gray-50 dark:bg-gray-800 border-none">
                 </div>
-
-                <div class="space-y-2">
+                <div>
                     <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Language / ভাষা</label>
-                    <select id="lang-selector" onchange="changeLanguage()" class="w-full p-3 text-sm rounded-xl bg-gray-50 dark:bg-gray-800 border-none focus:ring-2 focus:ring-primary">
+                    <select id="lang-selector" onchange="changeLanguage()" class="w-full mt-1 p-3 text-sm rounded-xl bg-gray-50 dark:bg-gray-800 border-none">
                         <option value="bn-BD">Bangla (বাংলাদেশ)</option>
                         <option value="en-US">English (US)</option>
                     </select>
                 </div>
-
-                <button onclick="saveConfig()" class="w-full bg-primary py-3 rounded-xl text-white font-bold hover:brightness-110 transition shadow-lg shadow-primary/20">Save Settings</button>
+                <button onclick="saveConfig()" class="w-full bg-primary py-3 rounded-xl text-white font-bold shadow-lg shadow-primary/20">Save Settings</button>
             </div>
         </aside>
 
         <main class="flex-1 flex flex-col relative bg-slate-50 dark:bg-darker">
             
-            <header class="h-16 flex items-center justify-between px-6 z-50">
-                <button onclick="toggleSidebar()" class="p-2 text-gray-500 hover:text-primary"><i class="fas fa-bars-staggered"></i></button>
+            <header class="h-16 flex items-center justify-between px-6 z-40 bg-white/50 dark:bg-darker/50 backdrop-blur-md">
+                <button onclick="toggleSidebar()" class="p-2 text-gray-500"><i class="fas fa-bars-staggered"></i></button>
                 
-                <div class="flex items-center gap-4">
-                    <button onclick="toggleCaptions()" id="hide-btn" class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-gray-800 shadow-sm text-gray-500">
-                        <i id="hide-icon" class="fas fa-eye"></i>
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleCaptions()" id="caption-toggle-btn" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 text-xs font-bold transition-all hover:bg-gray-50">
+                        <i id="hide-icon" class="fas fa-eye text-primary"></i>
+                        <span class="hidden sm:inline" id="hide-text">Hide Captions</span>
                     </button>
-                    <button onclick="toggleTheme()" class="text-gray-400"><i class="fas fa-circle-half-stroke"></i></button>
+                    <button onclick="toggleTheme()" class="w-10 h-10 flex items-center justify-center text-gray-400"><i class="fas fa-circle-half-stroke"></i></button>
                 </div>
             </header>
 
-            <div id="live-interface" class="flex-1 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+            <div id="live-interface" class="flex-1 flex relative items-center justify-center overflow-hidden">
                 
-                <div id="speech-bubble" class="absolute top-4 left-6 right-6 text-center z-20 pointer-events-none">
-                    <div class="max-w-xl mx-auto p-4 rounded-2xl bg-white/40 dark:bg-white/5 backdrop-blur-sm">
-                        <p id="user-transcript" class="text-primary font-bold text-lg mb-1"></p>
-                        <p id="ai-caption" class="text-gray-600 dark:text-gray-300 text-sm font-medium"></p>
+                <div id="speech-bubble" class="absolute left-6 top-1/2 -translate-y-1/2 z-30 pointer-events-none">
+                    <div class="p-5 rounded-3xl bg-white/80 dark:bg-dark/80 backdrop-blur-lg shadow-xl border border-white dark:border-gray-700">
+                        <div class="w-8 h-1 bg-primary/20 rounded-full mb-3"></div>
+                        <p id="user-transcript" class="text-primary font-bold text-lg leading-tight mb-2"></p>
+                        <p id="ai-caption" class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed italic"></p>
                     </div>
                 </div>
 
-                <div id="cat-container" class="relative group mb-12">
-                    <div id="glow" class="absolute inset-0 bg-primary/20 blur-[100px] rounded-full transition-all duration-1000 opacity-0 group-[.is-listening]:opacity-100 group-[.is-talking]:opacity-100 group-[.is-talking]:bg-green-500/10"></div>
+                <div id="cat-container" class="relative group">
+                    <div id="glow" class="absolute inset-0 bg-primary/20 blur-[100px] rounded-full transition-all duration-1000 opacity-0 group-[.is-listening]:opacity-100 group-[.is-talking]:opacity-100"></div>
                     <div id="ring" class="hidden absolute -inset-8 border-2 border-primary/30 rounded-full mic-active-ring"></div>
                     
-                    <svg id="svg-cat" viewBox="0 0 200 200" class="w-64 h-64 lg:w-80 lg:h-80 relative z-10 drop-shadow-2xl">
+                    <svg viewBox="0 0 200 200" class="w-64 h-64 lg:w-96 lg:h-96 relative z-10 drop-shadow-2xl transition-transform duration-500 group-active:scale-95">
                         <path d="M55 45 L35 10 L75 35 Z" fill="#4f46e5" class="cat-ear" />
                         <path d="M145 45 L165 10 L125 35 Z" fill="#4f46e5" class="cat-ear" />
                         <circle cx="100" cy="100" r="85" fill="#6366f1" />
@@ -109,20 +122,17 @@
                     </svg>
                 </div>
 
-                <div class="flex flex-col items-center gap-6 z-30">
-                    <div class="flex items-center gap-4">
-                        <button id="mic-btn" onclick="handleMicToggle()" class="w-20 h-20 rounded-full bg-white dark:bg-gray-800 shadow-2xl flex items-center justify-center text-2xl border-4 border-gray-100 dark:border-gray-700 hover:scale-105 transition-all">
-                            <i id="mic-icon" class="fas fa-microphone text-gray-400"></i>
+                <div class="absolute bottom-10 left-0 right-0 flex flex-col items-center gap-6 z-40">
+                    <div class="flex items-center gap-5">
+                        <button id="mic-btn" onclick="handleMicToggle()" class="w-20 h-20 rounded-full bg-white dark:bg-gray-800 shadow-2xl flex items-center justify-center text-3xl border-4 border-gray-100 dark:border-gray-700 hover:scale-110 transition-all">
+                            <i id="mic-icon" class="fas fa-microphone text-gray-300"></i>
                         </button>
 
-                        <button id="stop-btn" onclick="panicStop()" class="hidden w-16 h-16 rounded-full bg-red-500 text-white flex items-center justify-center text-xl shadow-lg shadow-red-500/30">
+                        <button id="stop-btn" onclick="panicStop()" class="hidden w-16 h-16 rounded-full bg-red-500 text-white flex items-center justify-center text-xl shadow-lg shadow-red-500/30 active:scale-90 transition-all">
                             <i class="fas fa-stop"></i>
                         </button>
                     </div>
-                    
-                    <div id="status-chip" class="px-4 py-1.5 rounded-full bg-gray-200 dark:bg-gray-800 text-[10px] font-black uppercase tracking-widest text-gray-500">
-                        OFFLINE
-                    </div>
+                    <div id="status-chip" class="px-5 py-1.5 rounded-full bg-gray-200 dark:bg-gray-800 text-[10px] font-black uppercase tracking-widest text-gray-500">OFFLINE</div>
                 </div>
 
             </div>
@@ -154,49 +164,42 @@
             aiText: document.getElementById('ai-caption'),
             cat: document.getElementById('cat-container'),
             ring: document.getElementById('ring'),
-            speechBubble: document.getElementById('speech-bubble'),
-            hideIcon: document.getElementById('hide-icon')
+            bubble: document.getElementById('speech-bubble'),
+            hideIcon: document.getElementById('hide-icon'),
+            hideText: document.getElementById('hide-text')
         };
 
         function init() {
-            setupSpeechRecognition();
+            setupRecognition();
             document.getElementById('api-key').value = STATE.config.key;
             document.getElementById('lang-selector').value = STATE.lang;
-
             setTimeout(() => {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('app').classList.remove('hidden');
             }, 800);
         }
 
-        function setupSpeechRecognition() {
+        function setupRecognition() {
             const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (SpeechRec) {
                 STATE.recognition = new SpeechRec();
                 STATE.recognition.continuous = true;
                 STATE.recognition.interimResults = true;
                 STATE.recognition.lang = STATE.lang;
-
-                STATE.recognition.onresult = handleSpeechResult;
+                STATE.recognition.onresult = handleResult;
                 STATE.recognition.onend = () => { if(STATE.isActive && !STATE.isSpeaking) STATE.recognition.start(); };
             }
         }
 
-        function changeLanguage() {
-            STATE.lang = document.getElementById('lang-selector').value;
-            localStorage.setItem('cat_lang', STATE.lang);
-            if (STATE.recognition) STATE.recognition.lang = STATE.lang;
-            panicStop();
-        }
-
         function toggleCaptions() {
             STATE.showCaptions = !STATE.showCaptions;
-            DOM.speechBubble.classList.toggle('caption-hidden', !STATE.showCaptions);
-            DOM.hideIcon.className = STATE.showCaptions ? 'fas fa-eye' : 'fas fa-eye-slash';
+            DOM.bubble.classList.toggle('caption-hidden', !STATE.showCaptions);
+            DOM.hideIcon.className = STATE.showCaptions ? 'fas fa-eye text-primary' : 'fas fa-eye-slash text-gray-400';
+            DOM.hideText.innerText = STATE.showCaptions ? 'Hide Captions' : 'Show Captions';
         }
 
         let silenceTimer;
-        function handleSpeechResult(event) {
+        function handleResult(event) {
             let interim = '', final = '';
             for (let i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) final += event.results[i][0].transcript;
@@ -206,82 +209,58 @@
             if (final) {
                 DOM.userText.innerText = final;
                 clearTimeout(silenceTimer);
-                silenceTimer = setTimeout(() => {
-                    if (final.trim().length > 1) processVoiceCommand(final);
-                    DOM.userText.innerText = "";
-                }, 1000);
+                silenceTimer = setTimeout(() => { if (final.trim().length > 1) processCommand(final); }, 1000);
             }
         }
 
-        async function processVoiceCommand(text) {
-            if (!STATE.config.key) return alert("API Key missing!");
-            
+        async function processCommand(text) {
+            if (!STATE.config.key) return alert("Key missing in settings!");
             STATE.recognition.stop();
             DOM.aiText.innerText = "...";
             DOM.status.innerText = STATE.lang === 'bn-BD' ? "চিন্তা করছে" : "Thinking";
             DOM.stopBtn.classList.remove('hidden');
-
             STATE.history.push({ role: 'user', content: text });
             STATE.abortController = new AbortController();
 
             const prompt = STATE.lang === 'bn-BD' 
-                ? 'তুমি একটি মানুষের মতো কিউট বিড়াল বন্ধু। শুধুমাত্র বাংলায় ছোট করে উত্তর দাও (১-২ লাইন)। কথা বলার সময় "উম্ম", "আচ্ছা", বা "হাহা" ব্যবহার করো যাতে মানুষ মনে হয়।' 
-                : 'You are a human-like cute cat friend. Respond briefly in English (1-2 lines). Use natural fillers like "umm" or "haha".';
+                ? 'তুমি একটি মানুষের মতো কিউট বিড়াল বন্ধু। শুধুমাত্র বাংলায় ১-২ লাইনে উত্তর দাও। কথা বলার সময় মাঝে মাঝে "উম্ম", "আচ্ছা", বা "হাহা" বলো।' 
+                : 'You are a human-like cat. Speak briefly in English (1-2 lines). Use natural fillers.';
 
             try {
-                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: { "Authorization": `Bearer ${STATE.config.key}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        model: STATE.config.model,
-                        messages: [{ role: 'system', content: prompt }, ...STATE.history.slice(-6)]
-                    }),
+                    body: JSON.stringify({ model: STATE.config.model, messages: [{ role: 'system', content: prompt }, ...STATE.history.slice(-6)] }),
                     signal: STATE.abortController.signal
                 });
-
-                const data = await response.json();
+                const data = await res.json();
                 const reply = data.choices[0].message.content;
                 STATE.history.push({ role: 'assistant', content: reply });
                 DOM.aiText.innerText = reply;
                 speak(reply);
-            } catch (e) {
-                if (e.name !== 'AbortError') startRecognition();
-            }
+            } catch (e) { if (e.name !== 'AbortError') startRec(); }
         }
 
         function speak(text) {
             STATE.isSpeaking = true;
             DOM.cat.classList.add('is-talking');
             DOM.status.innerText = STATE.lang === 'bn-BD' ? "কথা বলছে" : "Speaking";
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = STATE.lang;
-            
+            const utt = new SpeechSynthesisUtterance(text);
+            utt.lang = STATE.lang;
             const voices = STATE.synth.getVoices();
-            // Try to find a Bengali voice specifically if lang is bn-BD
-            const voice = voices.find(v => v.lang.startsWith(STATE.lang.split('-')[0])) || voices[0];
-            
-            utterance.voice = voice;
-            utterance.pitch = 1.1;
-
-            utterance.onend = () => {
+            utt.voice = voices.find(v => v.lang.startsWith(STATE.lang.split('-')[0])) || voices[0];
+            utt.pitch = 1.1;
+            utt.onend = () => {
                 STATE.isSpeaking = false;
                 DOM.cat.classList.remove('is-talking');
-                if (STATE.isActive) startRecognition();
+                if (STATE.isActive) startRec();
             };
-            STATE.synth.speak(utterance);
+            STATE.synth.speak(utt);
         }
 
-        function handleMicToggle() {
-            if (!STATE.isActive) {
-                STATE.isActive = true;
-                startRecognition();
-            } else {
-                panicStop();
-            }
-        }
+        function handleMicToggle() { if (!STATE.isActive) { STATE.isActive = true; startRec(); } else { panicStop(); } }
 
-        function startRecognition() {
+        function startRec() {
             try {
                 STATE.recognition.start();
                 DOM.micIcon.className = "fas fa-waveform text-primary animate-pulse";
@@ -301,8 +280,16 @@
             DOM.cat.classList.remove('is-talking', 'is-listening');
             DOM.status.innerText = "OFFLINE";
             DOM.stopBtn.classList.add('hidden');
-            DOM.micIcon.className = "fas fa-microphone text-gray-400";
+            DOM.micIcon.className = "fas fa-microphone text-gray-300";
             DOM.ring.classList.add('hidden');
+            DOM.userText.innerText = "";
+        }
+
+        function changeLanguage() {
+            STATE.lang = document.getElementById('lang-selector').value;
+            localStorage.setItem('cat_lang', STATE.lang);
+            if (STATE.recognition) STATE.recognition.lang = STATE.lang;
+            panicStop();
         }
 
         function saveConfig() {
@@ -313,10 +300,7 @@
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); }
         function toggleTheme() { document.documentElement.classList.toggle('dark'); }
-
         window.onload = init;
-        // Fix for Chrome synthesis voice loading
-        window.speechSynthesis.onvoiceschanged = () => {};
     </script>
 </body>
 </html>
