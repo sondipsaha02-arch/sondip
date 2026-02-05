@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Cat Live | Emotion Engine</title>
+    <title>AI Cat Live | Gemini Edition</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -28,24 +28,16 @@
 
     <style>
         body { font-family: 'Inter', 'SolaimanLipi', Arial, sans-serif; overflow: hidden; height: 100dvh; background-color: #f8fafc; transition: background 0.5s ease; }
-        
-        /* Cat Animation States */
         .cat-ear { transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: bottom center; }
         .is-listening .cat-ear { transform: rotate(15deg); }
         .cat-mouth { transition: all 0.3s ease; transform-origin: center; }
         .is-talking .cat-mouth { animation: talking-mouth 0.15s infinite alternate; }
         @keyframes talking-mouth { from { transform: scaleY(1); } to { transform: scaleY(3); } }
-        
-        /* Mood Transitions */
-        #svg-cat head-circle, #svg-cat body-parts { transition: fill 0.5s ease; }
         .eyebrow { transition: all 0.4s ease; opacity: 0; }
-        
-        /* Mood Specific CSS */
         .mood-angry .eyebrow { opacity: 1; transform: translateY(2px) rotate(15deg); }
         .mood-sad .eyebrow { opacity: 1; transform: translateY(-2px) rotate(-10deg); }
         .mood-excited #svg-cat { animation: bounce 0.5s infinite; }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-
         #speech-bubble { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); max-width: 320px; }
         .caption-hidden { opacity: 0; transform: translateX(-40px); pointer-events: none; }
     </style>
@@ -54,27 +46,27 @@
 
     <div id="loading" class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center gap-4">
         <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p class="font-bold text-primary italic">বিড়ালের অনুভূতি তৈরি হচ্ছে...</p>
+        <p class="font-bold text-primary italic">Gemini Cat জাগছে...</p>
     </div>
 
     <div id="app" class="hidden flex h-full relative overflow-hidden">
         
         <aside id="sidebar" class="absolute lg:relative z-50 w-80 h-full bg-white dark:bg-dark border-r border-gray-200 dark:border-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col">
             <div class="p-6 border-b dark:border-gray-800 flex justify-between items-center">
-                <span class="font-black text-xl text-primary italic">EMOTION <span class="text-gray-400">CAT</span></span>
+                <span class="font-black text-xl text-primary italic">GEMINI <span class="text-gray-400">CAT</span></span>
                 <button onclick="toggleSidebar()" class="lg:hidden p-2"><i class="fas fa-times"></i></button>
             </div>
             
             <div class="flex-1 overflow-y-auto p-6 space-y-6">
                 <div>
-                    <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400">API Key</label>
-                    <input type="password" id="api-key" placeholder="OpenRouter Key" class="w-full mt-1 p-3 text-sm rounded-xl bg-gray-50 dark:bg-gray-800 border-none">
+                    <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Gemini API Key</label>
+                    <input type="password" id="api-key" placeholder="Paste your Google API Key" class="w-full mt-1 p-3 text-sm rounded-xl bg-gray-50 dark:bg-gray-800 border-none">
+                    <p class="text-[9px] mt-1 text-gray-400">Get it from Google AI Studio</p>
                 </div>
                 
                 <div class="space-y-3">
                     <label class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Voice Settings</label>
                     <select id="voice-select" class="w-full p-3 text-xs rounded-xl bg-gray-50 dark:bg-gray-800 border-none"></select>
-                    <div class="flex justify-between text-[10px]"><span>PITCH</span><input type="range" id="pitch-slider" min="0.5" max="2" step="0.1" value="1.1"></div>
                 </div>
 
                 <div>
@@ -113,25 +105,21 @@
 
                 <div id="cat-container" class="relative group">
                     <div id="glow" class="absolute inset-0 bg-primary/20 blur-[100px] rounded-full transition-all duration-1000 opacity-0 group-[.is-listening]:opacity-100 group-[.is-talking]:opacity-100"></div>
-                    
                     <svg id="svg-cat" viewBox="0 0 200 200" class="w-64 h-64 lg:w-[400px] lg:h-[400px] relative z-10 transition-all duration-500">
                         <path id="ear-l" d="M55 45 L35 10 L75 35 Z" fill="currentColor" class="cat-ear text-indigo-600" />
                         <path id="ear-r" d="M145 45 L165 10 L125 35 Z" fill="currentColor" class="cat-ear text-indigo-600" />
                         <circle id="cat-head" cx="100" cy="100" r="85" fill="currentColor" class="text-indigo-500" />
                         <circle cx="100" cy="110" r="65" fill="#e0e7ff" />
-                        <path d="M70 95 Q80 90 90 95" stroke="#1e293b" stroke-width="2" fill="none" class="eyebrow" style="transform-origin: 80px 95px;"/>
-                        <path d="M110 95 Q120 90 130 95" stroke="#1e293b" stroke-width="2" fill="none" class="eyebrow" style="transform-origin: 120px 95px;"/>
-                        <g id="cat-eyes">
-                            <circle cx="80" cy="105" r="5" fill="#1e293b" />
-                            <circle cx="120" cy="105" r="5" fill="#1e293b" />
-                        </g>
+                        <path d="M70 95 Q80 90 90 95" stroke="#1e293b" stroke-width="2" fill="none" class="eyebrow" />
+                        <path d="M110 95 Q120 90 130 95" stroke="#1e293b" stroke-width="2" fill="none" class="eyebrow" />
+                        <g id="cat-eyes"><circle cx="80" cy="105" r="5" fill="#1e293b" /><circle cx="120" cy="105" r="5" fill="#1e293b" /></g>
                         <rect id="mouth" x="85" y="130" width="30" height="4" rx="2" fill="#1e293b" class="cat-mouth" />
                     </svg>
                 </div>
 
                 <div class="absolute bottom-12 left-0 right-0 flex flex-col items-center gap-6 z-40">
                     <div class="flex items-center gap-6">
-                        <button id="mic-btn" onclick="handleMicToggle()" class="w-20 h-20 rounded-full bg-white dark:bg-gray-800 shadow-2xl flex items-center justify-center text-2xl border-4 border-gray-50 active:scale-90 transition-all">
+                        <button id="mic-btn" onclick="handleMicToggle()" class="w-20 h-20 rounded-full bg-white dark:bg-gray-800 shadow-2xl flex items-center justify-center text-2xl border-4 active:scale-90 transition-all">
                             <i id="mic-icon" class="fas fa-microphone text-gray-300"></i>
                         </button>
                         <button id="stop-btn" onclick="panicStop()" class="hidden w-16 h-16 rounded-full bg-red-500 text-white flex items-center justify-center text-xl shadow-lg">
@@ -152,26 +140,25 @@
             voices: [],
             recognition: null,
             synth: window.speechSynthesis,
+            abortController: null,
             config: {
-                key: localStorage.getItem('cat_key') || '',
-                pitch: localStorage.getItem('cat_pitch') || 1.2,
+                key: localStorage.getItem('gemini_key') || '',
                 voiceName: localStorage.getItem('cat_voice_name') || ''
             }
         };
 
         const MOODS = {
-            happy: { color: '#6366f1', bg: 'bg-indigo-50', label: 'Happy 😊' },
-            excited: { color: '#fbbf24', bg: 'bg-amber-50', label: 'Excited 🤩' },
-            sad: { color: '#64748b', bg: 'bg-slate-100', label: 'Sad 🥺' },
-            angry: { color: '#ef4444', bg: 'bg-red-50', label: 'Angry 😤' },
-            thinking: { color: '#a855f7', bg: 'bg-purple-50', label: 'Thinking 🤔' }
+            happy: { color: '#6366f1', label: 'Happy 😊' },
+            excited: { color: '#fbbf24', label: 'Excited 🤩' },
+            sad: { color: '#64748b', label: 'Sad 🥺' },
+            angry: { color: '#ef4444', label: 'Angry 😤' },
+            thinking: { color: '#a855f7', label: 'Thinking 🤔' }
         };
 
         function init() {
             setupRecognition();
             window.speechSynthesis.onvoiceschanged = populateVoices;
             document.getElementById('api-key').value = STATE.config.key;
-            document.getElementById('pitch-slider').value = STATE.config.pitch;
             setTimeout(() => {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('app').classList.remove('hidden');
@@ -186,11 +173,8 @@
 
         function updateMood(mood) {
             const config = MOODS[mood] || MOODS.happy;
-            const cat = document.getElementById('svg-cat');
             const head = document.getElementById('cat-head');
             const ears = [document.getElementById('ear-l'), document.getElementById('ear-r')];
-            
-            // Visual Updates
             document.getElementById('cat-container').className = 'relative group mood-' + mood;
             head.style.color = config.color;
             ears.forEach(e => e.style.color = config.color);
@@ -199,22 +183,29 @@
         }
 
         async function processCommand(text) {
-            if (!STATE.config.key) return alert("Please set API Key!");
+            if (!STATE.config.key) return alert("Please enter your Gemini API Key in the sidebar!");
+            
             STATE.recognition.stop();
             updateMood('thinking');
+            STATE.abortController = new AbortController();
+
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${STATE.config.key}`;
             
-            const prompt = `You are a human-like cat. Every response MUST start with a mood tag: [HAPPY], [SAD], [EXCITED], [ANGRY], or [THINKING]. Keep response to 1-2 lines. Language: ${STATE.lang}`;
+            const prompt = `You are a human-like cat. Always start your response with exactly one mood tag: [HAPPY], [SAD], [EXCITED], [ANGRY], or [THINKING]. Respond naturally in ${STATE.lang === 'bn-BD' ? 'Bangla' : 'English'}. Keep it very short (1-2 sentences). Use fillers like "umm" or "haha".`;
 
             try {
-                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                const res = await fetch(endpoint, {
                     method: "POST",
-                    headers: { "Authorization": `Bearer ${STATE.config.key}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({ model: "deepseek/deepseek-r1:free", messages: [{ role: 'system', content: prompt }, { role: 'user', content: text }] })
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `${prompt} User says: ${text}` }] }]
+                    }),
+                    signal: STATE.abortController.signal
                 });
+
                 const data = await res.json();
-                const rawReply = data.choices[0].message.content;
+                const rawReply = data.candidates[0].content.parts[0].text;
                 
-                // Parse Mood Tag
                 const moodMatch = rawReply.match(/\[(.*?)\]/);
                 const mood = moodMatch ? moodMatch[1].toLowerCase() : 'happy';
                 const cleanReply = rawReply.replace(/\[.*?\]/, '').trim();
@@ -222,7 +213,10 @@
                 document.getElementById('ai-caption').innerText = cleanReply;
                 updateMood(mood);
                 speak(cleanReply);
-            } catch (e) { startRec(); }
+            } catch (e) { 
+                console.error(e);
+                if (e.name !== 'AbortError') startRec(); 
+            }
         }
 
         function speak(text) {
@@ -230,7 +224,6 @@
             document.getElementById('cat-container').classList.add('is-talking');
             const utt = new SpeechSynthesisUtterance(text);
             utt.lang = STATE.lang;
-            utt.pitch = STATE.config.pitch;
             utt.voice = STATE.voices.find(v => v.name === STATE.config.voiceName) || null;
             utt.onend = () => {
                 STATE.isSpeaking = false;
@@ -274,6 +267,7 @@
         }
 
         function panicStop() {
+            if (STATE.abortController) STATE.abortController.abort();
             STATE.isActive = false;
             STATE.synth.cancel();
             STATE.recognition.stop();
@@ -285,12 +279,11 @@
 
         function saveAllSettings() {
             STATE.config.key = document.getElementById('api-key').value;
-            STATE.config.pitch = document.getElementById('pitch-slider').value;
             STATE.config.voiceName = document.getElementById('voice-select').value;
-            localStorage.setItem('cat_key', STATE.config.key);
-            localStorage.setItem('cat_pitch', STATE.config.pitch);
+            localStorage.setItem('gemini_key', STATE.config.key);
             localStorage.setItem('cat_voice_name', STATE.config.voiceName);
             toggleSidebar();
+            alert("Gemini Settings Saved!");
         }
 
         function toggleCaptions() {
