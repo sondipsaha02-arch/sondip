@@ -1,154 +1,542 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0" />
-<title>AI Cat – Emotional Companion</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-
-<!-- MediaPipe -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-
-<style>
-body { background:#f8fafc; overflow:hidden; }
-#cat { transition: transform .5s ease; transform-origin: bottom center; }
-.emotion-happy #cat { transform: translateY(-8px) scale(1.03); }
-.emotion-sad #cat { transform: translateY(8px) scale(.97); opacity:.85 }
-.emotion-shy #cat { transform: rotate(-6deg) scale(.96); }
-.emotion-sulk #cat { transform: rotate(6deg) translateY(6px); }
-.emotion-sleep #cat { animation: breathe 2s infinite; opacity:.8 }
-@keyframes breathe { 50% { transform: scale(1.02) } }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Cat | Emotional Voice Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; overflow: hidden; height: 100dvh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); touch-action: none; }
+        #sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; }
+        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 900; }
+        #cat-stage { transform-origin: bottom center; transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        
+        /* Cat Animations */
+        .cat-happy #head-group { animation: happy-bounce 0.6s ease-in-out infinite; }
+        @keyframes happy-bounce { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-15px) rotate(5deg); } }
+        
+        .cat-angry #cat-stage { animation: angry-shake 0.4s ease-in-out; transform: translateX(150px); }
+        @keyframes angry-shake { 0%, 100% { transform: translateX(150px) rotate(0deg); } 25% { transform: translateX(145px) rotate(-5deg); } 75% { transform: translateX(155px) rotate(5deg); } }
+        
+        .cat-sad #head-group { transform: translateY(20px); }
+        .cat-sad #mouth-path { transform: scaleY(-1); }
+        
+        .cat-sulking #head-group { transform: rotate(180deg); }
+        
+        .cat-thinking #head-group { animation: think-tilt 1s ease-in-out infinite; }
+        @keyframes think-tilt { 0%, 100% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } }
+        
+        .is-talking #head-group { animation: talk-wobble 0.3s infinite alternate; }
+        @keyframes talk-wobble { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+        
+        .eye-lid { transform-origin: center; transition: transform 0.1s; }
+        .blink .eye-lid { transform: scaleY(0.1); }
+        .angry-eyes .eye-lid { transform: scaleX(1.5); }
+        .happy-eyes .eye-lid { transform: scale(1.3); }
+        .sad-eyes .eye-lid { transform: translateY(3px); }
+        
+        /* Tears for crying */
+        .tear { opacity: 0; transition: all 0.5s; }
+        .cat-sad .tear { opacity: 1; animation: cry 1.5s ease-in-out infinite; }
+        @keyframes cry { 0% { transform: translateY(0); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(20px); opacity: 0; } }
+        
+        /* Heart particles */
+        .heart-particle { position: absolute; font-size: 24px; opacity: 0; pointer-events: none; }
+        .heart-particle.active { animation: float-heart 2s ease-out forwards; }
+        @keyframes float-heart { 0% { transform: translateY(0) scale(0); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(-100px) scale(1.5); opacity: 0; } }
+        
+        #speech-bubble { position: absolute; z-index: 100; width: 85vw; max-width: 380px; touch-action: none; }
+        
+        /* Petting area */
+        #pet-zone { position: absolute; width: 200px; height: 200px; cursor: pointer; z-index: 50; }
+        
+        .emoji-float { position: absolute; font-size: 32px; pointer-events: none; animation: emoji-rise 2s ease-out forwards; }
+        @keyframes emoji-rise { 0% { transform: translateY(0) scale(0); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(-120px) scale(1.2); opacity: 0; } }
+    </style>
 </head>
+<body>
 
-<body class="flex flex-col items-center justify-center h-screen">
+    <div id="overlay" onclick="toggleSidebar()"></div>
 
-<!-- CAMERA -->
-<video id="camera" autoplay playsinline class="hidden"></video>
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl transform -translate-x-full">
+        <div class="p-6 h-full flex flex-col">
+            <h2 class="text-xl font-black text-indigo-600 mb-8 italic">SETTINGS</h2>
+            <div class="space-y-6 flex-1 overflow-y-auto">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">OpenRouter API Key</label>
+                    <input type="password" id="api-key" placeholder="sk-or-..." class="w-full mt-2 p-3 bg-gray-100 rounded-xl border-none text-sm outline-none">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Model ID</label>
+                    <input type="text" id="model-profile" value="google/gemini-2.0-flash-exp:free" class="w-full mt-2 p-3 bg-gray-100 rounded-xl border-none text-sm outline-none">
+                </div>
+                <div class="p-3 bg-indigo-50 rounded-xl border border-indigo-100">
+                    <p class="text-[10px] text-indigo-700 font-bold uppercase mb-1">Voice Commands:</p>
+                    <p class="text-[11px] text-indigo-600 italic">"Talk in English" → EN mode</p>
+                    <p class="text-[11px] text-indigo-600 italic">"বাংলায় কথা বলো" → BN mode</p>
+                </div>
+                <div class="p-3 bg-green-50 rounded-xl border border-green-100">
+                    <p class="text-[10px] text-green-700 font-bold uppercase mb-1">Interactions:</p>
+                    <p class="text-[11px] text-green-600">👋 Tap/Click cat → Pet & get love</p>
+                    <p class="text-[11px] text-green-600">😢 Say sad things → Cat cries</p>
+                    <p class="text-[11px] text-green-600">😠 Scold the cat → Gets angry</p>
+                    <p class="text-[11px] text-green-600">❤️ Praise it → Shows happiness</p>
+                </div>
+            </div>
+            <button onclick="saveSettings()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg">Save Config</button>
+        </div>
+    </aside>
 
-<!-- HEADER -->
-<div class="absolute top-4 flex gap-2">
-<select id="personality" class="p-2 rounded-xl bg-indigo-100 text-xs font-bold">
-<option value="cute">😺 Cute</option>
-<option value="sarcastic">😼 Sarcastic</option>
-<option value="wise">🧙 Wise</option>
-</select>
-</div>
+    <main class="flex flex-col h-full relative">
+        <header class="p-4 flex gap-2 items-center pointer-events-none">
+            <button onclick="toggleSidebar()" class="pointer-events-auto w-10 h-10 bg-white rounded-xl shadow text-indigo-600"><i class="fas fa-cog"></i></button>
+            <div class="pointer-events-auto flex-1 bg-white/90 rounded-xl shadow p-1 flex items-center h-10">
+                <input type="text" id="text-input" placeholder="Type message..." class="flex-1 bg-transparent px-3 text-sm outline-none border-none" onkeydown="if(event.key==='Enter') sendText()">
+                <button onclick="sendText()" class="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center"><i class="fas fa-paper-plane text-[10px]"></i></button>
+            </div>
+        </header>
 
-<!-- CAT -->
-<svg id="cat" viewBox="0 0 200 200" width="320">
-<circle cx="100" cy="110" r="70" fill="#6366f1"/>
-<circle cx="80" cy="100" r="6" fill="#111"/>
-<circle cx="120" cy="100" r="6" fill="#111"/>
-<ellipse cx="100" cy="135" rx="12" ry="2" fill="#111"/>
-</svg>
+        <div class="flex-1 flex flex-col items-center justify-center relative">
+            <div id="speech-bubble" style="left: 20px; top: 80px;">
+                <div class="bg-white/95 p-5 rounded-[2rem] shadow-2xl border border-white/50 backdrop-blur-sm">
+                    <div id="drag-handle" class="w-10 h-1 bg-gray-300 mx-auto mb-3 rounded-full cursor-move"></div>
+                    <p id="user-transcript" class="text-indigo-600 font-bold text-base min-h-[1.2rem] mb-2"></p>
+                    <p id="ai-caption" class="text-gray-700 text-sm font-medium mb-1">Hello! Ready to chat. 😸</p>
+                    <p id="ai-caption-bn" class="text-gray-500 text-xs italic"></p>
+                </div>
+            </div>
 
-<!-- SPEECH -->
-<div class="bg-white p-4 rounded-2xl shadow-xl text-center max-w-sm">
-<p id="aiText" class="font-semibold text-gray-700">Hello! I'm alive now 😼</p>
-<p id="bnText" class="text-sm italic text-gray-500 mt-1">আমি এখন জীবন্ত।</p>
-</div>
+            <div id="pet-zone"></div>
+            
+            <div id="cat-stage">
+                <svg viewBox="0 0 200 200" class="w-72 h-72 sm:w-80 sm:h-80 lg:w-96 lg:h-96">
+                    <!-- Shadow -->
+                    <ellipse cx="100" cy="190" rx="60" ry="8" fill="rgba(0,0,0,0.2)" />
+                    
+                    <g id="head-group">
+                        <!-- Ears -->
+                        <path d="M55 45 L35 10 L75 35 Z" fill="#4338ca" />
+                        <path d="M145 45 L165 10 L125 35 Z" fill="#4338ca" />
+                        
+                        <!-- Head -->
+                        <circle cx="100" cy="100" r="80" fill="#6366f1" />
+                        <circle cx="100" cy="110" r="62" fill="#e0e7ff" />
+                        
+                        <!-- Eyes -->
+                        <g id="eyes">
+                            <circle class="eye-lid" cx="78" cy="100" r="8" fill="#1e293b" />
+                            <circle class="eye-lid" cx="122" cy="100" r="8" fill="#1e293b" />
+                            <circle cx="80" cy="98" r="3" fill="white" />
+                            <circle cx="124" cy="98" r="3" fill="white" />
+                        </g>
+                        
+                        <!-- Tears -->
+                        <ellipse class="tear" cx="78" cy="110" rx="3" ry="6" fill="#60a5fa" opacity="0.7" />
+                        <ellipse class="tear" cx="122" cy="110" rx="3" ry="6" fill="#60a5fa" opacity="0.7" />
+                        
+                        <!-- Nose -->
+                        <circle cx="100" cy="115" r="4" fill="#f43f5e" />
+                        
+                        <!-- Mouth -->
+                        <path id="mouth-path" d="M 100 115 Q 90 125 85 120 M 100 115 Q 110 125 115 120" stroke="#1e293b" stroke-width="2" fill="none" stroke-linecap="round" />
+                        
+                        <!-- Whiskers -->
+                        <line x1="60" y1="105" x2="30" y2="100" stroke="#4338ca" stroke-width="2" />
+                        <line x1="60" y1="115" x2="30" y2="120" stroke="#4338ca" stroke-width="2" />
+                        <line x1="140" y1="105" x2="170" y2="100" stroke="#4338ca" stroke-width="2" />
+                        <line x1="140" y1="115" x2="170" y2="120" stroke="#4338ca" stroke-width="2" />
+                    </g>
+                    
+                    <!-- Body -->
+                    <ellipse cx="100" cy="170" rx="50" ry="35" fill="#6366f1" />
+                    <ellipse cx="100" cy="175" rx="40" ry="28" fill="#e0e7ff" />
+                    
+                    <!-- Tail -->
+                    <path id="tail" d="M 140 160 Q 170 150 180 120" stroke="#4338ca" stroke-width="8" fill="none" stroke-linecap="round" />
+                </svg>
+            </div>
 
-<!-- CONTROLS -->
-<div class="mt-4 flex gap-3">
-<button onclick="pet()" class="bg-white px-4 py-2 rounded-full shadow">🤲 Pet</button>
-<button onclick="scold()" class="bg-white px-4 py-2 rounded-full shadow">☝️ Scold</button>
-</div>
+            <div class="absolute bottom-10 flex flex-col items-center gap-3">
+                <button id="mic-btn" onclick="toggleMic()" class="w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center text-xl active:scale-90 transition-transform">
+                    <i id="mic-icon" class="fas fa-microphone text-gray-300"></i>
+                </button>
+                <div class="flex gap-2 items-center">
+                    <span id="lang-tag" class="text-[9px] font-bold px-3 py-1 bg-white/90 text-indigo-600 rounded-full uppercase tracking-tighter shadow">BN-BD</span>
+                    <span id="mood-tag" class="text-[9px] font-bold px-3 py-1 bg-white/90 text-purple-600 rounded-full uppercase tracking-tighter shadow">NEUTRAL</span>
+                </div>
+            </div>
+        </div>
+    </main>
 
-<!-- XP -->
-<div class="absolute bottom-4 bg-indigo-100 px-4 py-1 rounded-full text-xs font-bold">
-XP: <span id="xp">0</span> | Level <span id="lvl">1</span>
-</div>
+    <script>
+        const STATE = {
+            listening: false,
+            speaking: false,
+            lang: localStorage.getItem('cat_lang') || 'bn-BD',
+            mood: 'neutral',
+            petCount: 0,
+            config: { 
+                key: localStorage.getItem('cat_key') || '', 
+                model: localStorage.getItem('cat_model') || 'google/gemini-2.0-flash-exp:free' 
+            }
+        };
 
-<script>
-/* ================= STATE ================= */
-const STATE = {
-xp: Number(localStorage.getItem("xp")||0),
-level: Number(localStorage.getItem("level")||1),
-mood: localStorage.getItem("mood")||"neutral",
-personality: "cute"
-};
+        // --- EMOTION DETECTION ---
+        function detectEmotion(text) {
+            const input = text.toLowerCase();
+            
+            // Sad/Crying triggers
+            const sadWords = ['দুঃখ', 'কষ্ট', 'কান্না', 'sad', 'cry', 'hurt', 'pain', 'lonely', 'miss you', 'মরে যা'];
+            if (sadWords.some(word => input.includes(word))) return 'sad';
+            
+            // Angry triggers (scolding)
+            const angryWords = ['বোকা', 'খারাপ', 'বদ', 'bad cat', 'naughty', 'stupid', 'shut up', 'go away', 'দূর হ'];
+            if (angryWords.some(word => input.includes(word))) return 'angry';
+            
+            // Sulking triggers
+            const sulkWords = ['রাগ করলাম', 'কথা বলব না', 'তোমার সাথে', 'ignore', "won't talk"];
+            if (sulkWords.some(word => input.includes(word))) return 'sulking';
+            
+            // Happy triggers
+            const happyWords = ['ভালো', 'ভালোবাসি', 'love you', 'good cat', 'cute', 'sweet', 'amazing', 'wonderful', 'সুন্দর', 'ভাল'];
+            if (happyWords.some(word => input.includes(word))) return 'happy';
+            
+            return 'neutral';
+        }
 
-/* ================= MEMORY ================= */
-function saveMemory(){
-localStorage.setItem("xp",STATE.xp);
-localStorage.setItem("level",STATE.level);
-localStorage.setItem("mood",STATE.mood);
-}
+        function setMood(mood) {
+            // Remove all mood classes
+            document.body.className = document.body.className.replace(/cat-\w+/g, '').trim();
+            document.getElementById('eyes').className = '';
+            
+            STATE.mood = mood;
+            document.getElementById('mood-tag').innerText = mood.toUpperCase();
+            
+            switch(mood) {
+                case 'happy':
+                    document.body.classList.add('cat-happy');
+                    document.getElementById('eyes').classList.add('happy-eyes');
+                    break;
+                case 'angry':
+                    document.body.classList.add('cat-angry');
+                    document.getElementById('eyes').classList.add('angry-eyes');
+                    setTimeout(() => {
+                        document.body.classList.remove('cat-angry');
+                        setMood('sulking');
+                    }, 2000);
+                    break;
+                case 'sad':
+                    document.body.classList.add('cat-sad');
+                    document.getElementById('eyes').classList.add('sad-eyes');
+                    break;
+                case 'sulking':
+                    document.body.classList.add('cat-sulking');
+                    break;
+                case 'thinking':
+                    document.body.classList.add('cat-thinking');
+                    break;
+                default:
+                    // Reset to center
+                    document.getElementById('cat-stage').style.transform = 'translateX(0)';
+            }
+        }
 
-/* ================= XP SYSTEM ================= */
-function addXP(v){
-STATE.xp+=v;
-if(STATE.xp>STATE.level*10){
-STATE.level++;
-}
-saveMemory();
-updateUI();
-}
+        // --- PETTING INTERACTION ---
+        function setupPetting() {
+            const petZone = document.getElementById('pet-zone');
+            const stage = document.getElementById('cat-stage');
+            const rect = stage.getBoundingClientRect();
+            
+            petZone.style.left = rect.left + 'px';
+            petZone.style.top = rect.top + 'px';
+            petZone.style.width = rect.width + 'px';
+            petZone.style.height = rect.height + 'px';
+            
+            petZone.onclick = (e) => {
+                STATE.petCount++;
+                setMood('happy');
+                
+                // Create heart particle
+                const heart = document.createElement('div');
+                heart.innerHTML = '❤️';
+                heart.className = 'heart-particle active';
+                heart.style.left = e.clientX + 'px';
+                heart.style.top = e.clientY + 'px';
+                document.body.appendChild(heart);
+                setTimeout(() => heart.remove(), 2000);
+                
+                // Show love message
+                const messages = {
+                    'bn-BD': ['মিউ! ভালোবাসা! 😻', 'পুরর পুর! ❤️', 'আরো আদর করো! 🥰', 'তুমি সেরা! 💕'],
+                    'en-US': ['Meow! Love it! 😻', 'Purr purr! ❤️', 'More pets please! 🥰', 'You\'re the best! 💕']
+                };
+                
+                const msg = messages[STATE.lang][Math.floor(Math.random() * 4)];
+                document.getElementById('ai-caption').innerText = msg;
+                
+                if (STATE.petCount % 5 === 0) {
+                    speak(STATE.lang === 'bn-BD' ? 'তুমি আমাকে খুব ভালোবাসো!' : 'You love me so much!');
+                }
+                
+                setTimeout(() => setMood('neutral'), 3000);
+            };
+        }
 
-/* ================= EMOTIONS ================= */
-function emotion(e){
-document.body.className="";
-document.body.classList.add("emotion-"+e);
-STATE.mood=e;
-saveMemory();
-}
+        // --- LANGUAGE SWITCHER ---
+        function checkLanguageSwitch(text) {
+            const input = text.toLowerCase();
+            const enCommands = ["talk with me in english", "switch to english", "talk in english", "speak english"];
+            const bnCommands = ["বাংলায় কথা বলো", "বাংলায় বল", "switch to bengali", "কথা বল বাংলায়"];
 
-/* ================= ACTIONS ================= */
-function pet(){
-emotion("happy");
-addXP(2);
-talk("I like that. You're gentle.","তুমি খুব আদুরে।");
-}
-function scold(){
-emotion("sulk");
-addXP(-1);
-talk("Hey… that hurt.","ওটা কষ্ট দিল।");
-}
+            if (enCommands.some(cmd => input.includes(cmd))) {
+                setLanguage('en-US');
+                return { en: "Sure! I will talk with you in English from now on. Meow!", bn: "অবশ্যই! এখন থেকে আমি ইংরেজিতে কথা বলব। মিউ!" };
+            }
+            if (bnCommands.some(cmd => input.includes(cmd))) {
+                setLanguage('bn-BD');
+                return { en: "Okay! I'll speak in Bengali from now.", bn: "ঠিক আছে! এখন থেকে বাংলায় কথা বলব। মিউ!" };
+            }
+            return null;
+        }
 
-/* ================= AI SPEECH (STATIC DEMO) ================= */
-function talk(en,bn){
-document.getElementById("aiText").innerText=en;
-document.getElementById("bnText").innerText=bn;
-speechSynthesis.cancel();
-let u=new SpeechSynthesisUtterance(en);
-u.lang="en-US";
-speechSynthesis.speak(u);
-}
+        function setLanguage(newLang) {
+            STATE.lang = newLang;
+            localStorage.setItem('cat_lang', newLang);
+            document.getElementById('lang-tag').innerText = newLang.toUpperCase();
+            if(rec) rec.lang = newLang;
+        }
 
-/* ================= FACE DETECTION ================= */
-function initFace(){
-const face=new FaceDetection({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${f}`});
-face.setOptions({minDetectionConfidence:.6});
-face.onResults(res=>{
-if(res.detections.length>0){
-emotion("shy");
-}else{
-emotion("sleep");
-}
-});
-new Camera(document.getElementById("camera"),{
-onFrame:async()=>{await face.send({image:camera});},
-width:320,height:240
-}).start();
-}
+        // --- AI & SPEECH ---
+        async function callAI(text) {
+            // Check for language switch
+            const switchResponse = checkLanguageSwitch(text);
+            if (switchResponse) {
+                document.getElementById('ai-caption').innerText = switchResponse.en;
+                document.getElementById('ai-caption-bn').innerText = switchResponse.bn;
+                speak(STATE.lang === 'en-US' ? switchResponse.en : switchResponse.bn);
+                return;
+            }
 
-/* ================= INIT ================= */
-function updateUI(){
-document.getElementById("xp").innerText=STATE.xp;
-document.getElementById("lvl").innerText=STATE.level;
-}
-document.getElementById("personality").onchange=e=>{
-STATE.personality=e.target.value;
-talk("I feel different now.","আমার মন বদলে গেছে।");
-};
-updateUI();
-document.body.addEventListener("click",initFace,{once:true});
-</script>
+            // Detect emotion
+            const emotion = detectEmotion(text);
+            setMood(emotion);
 
+            if (!STATE.config.key) {
+                alert("Please set up your OpenRouter API Key in settings!");
+                return;
+            }
+            
+            updateUI('THINKING');
+            setMood('thinking');
+            
+            const systemPrompt = STATE.lang === 'bn-BD' 
+                ? "তুমি একটি বিড়াল। বাংলায় উত্তর দাও। খুব সংক্ষিপ্ত এবং মজার উত্তর দাও। সর্বোচ্চ ১৫ শব্দ।" 
+                : "You are a cat. Answer in English. Be very short and playful. Maximum 15 words.";
+
+            try {
+                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { 
+                        "Authorization": `Bearer ${STATE.config.key}`, 
+                        "Content-Type": "application/json" 
+                    },
+                    body: JSON.stringify({
+                        model: STATE.config.model,
+                        messages: [
+                            { role: 'system', content: systemPrompt }, 
+                            { role: 'user', content: text }
+                        ]
+                    })
+                });
+                
+                const data = await res.json();
+                const reply = data.choices[0].message.content;
+                
+                // Show in both languages
+                document.getElementById('ai-caption').innerText = reply;
+                
+                // Get translation if needed
+                if (STATE.lang === 'en-US') {
+                    translateToBengali(reply);
+                } else {
+                    translateToEnglish(reply);
+                }
+                
+                speak(reply);
+                
+            } catch (e) { 
+                console.error(e);
+                document.getElementById('ai-caption').innerText = "Meow? Error! 😿";
+                updateUI('STANDBY');
+                setMood('neutral');
+            }
+        }
+
+        async function translateToBengali(text) {
+            try {
+                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { 
+                        "Authorization": `Bearer ${STATE.config.key}`, 
+                        "Content-Type": "application/json" 
+                    },
+                    body: JSON.stringify({
+                        model: STATE.config.model,
+                        messages: [{ role: 'user', content: `Translate to Bengali: ${text}` }]
+                    })
+                });
+                const data = await res.json();
+                document.getElementById('ai-caption-bn').innerText = data.choices[0].message.content;
+            } catch(e) {}
+        }
+
+        async function translateToEnglish(text) {
+            try {
+                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { 
+                        "Authorization": `Bearer ${STATE.config.key}`, 
+                        "Content-Type": "application/json" 
+                    },
+                    body: JSON.stringify({
+                        model: STATE.config.model,
+                        messages: [{ role: 'user', content: `Translate to English: ${text}` }]
+                    })
+                });
+                const data = await res.json();
+                document.getElementById('ai-caption-bn').innerText = data.choices[0].message.content;
+            } catch(e) {}
+        }
+
+        function speak(text) {
+            STATE.speaking = true;
+            window.speechSynthesis.cancel();
+            const ut = new SpeechSynthesisUtterance(text);
+            ut.lang = STATE.lang;
+            const mouth = document.getElementById('mouth-path');
+
+            ut.onstart = () => updateUI('SPEAKING');
+            ut.onend = () => {
+                STATE.speaking = false;
+                updateUI('STANDBY');
+                setMood('neutral');
+                if (STATE.listening) rec.start();
+            };
+            window.speechSynthesis.speak(ut);
+        }
+
+        // --- SPEECH RECOGNITION ---
+        const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const rec = Rec ? new Rec() : null;
+        if(rec) {
+            rec.lang = STATE.lang;
+            rec.continuous = false;
+            rec.interimResults = false;
+            
+            rec.onstart = () => updateUI('LISTENING');
+            rec.onresult = (e) => {
+                const txt = e.results[0][0].transcript;
+                document.getElementById('user-transcript').innerText = txt;
+                callAI(txt);
+            };
+            rec.onend = () => { 
+                if(STATE.listening && !STATE.speaking) {
+                    setTimeout(() => { 
+                        try { rec.start(); } catch(e) {} 
+                    }, 300); 
+                }
+            };
+            rec.onerror = (e) => console.log('Speech error:', e);
+        }
+
+        function toggleMic() {
+            STATE.listening = !STATE.listening;
+            if(STATE.listening) { 
+                rec.lang = STATE.lang; 
+                try { rec.start(); } catch(e) {}
+            } else { 
+                try { rec.stop(); } catch(e) {}
+                updateUI('STANDBY'); 
+            }
+        }
+
+        function sendText() {
+            const input = document.getElementById('text-input');
+            if(!input.value.trim()) return;
+            document.getElementById('user-transcript').innerText = input.value;
+            callAI(input.value);
+            input.value = '';
+            input.blur();
+        }
+
+        // --- UI HELPERS ---
+        function updateUI(status) {
+            const icon = document.getElementById('mic-icon');
+            document.body.classList.remove('is-talking');
+            
+            if (status === 'LISTENING') {
+                icon.className = "fas fa-microphone text-red-500 animate-pulse";
+            } else if (status === 'SPEAKING') {
+                document.body.classList.add('is-talking');
+                icon.className = "fas fa-volume-up text-green-500";
+            } else if (status === 'THINKING') {
+                icon.className = "fas fa-circle-notch fa-spin text-orange-500";
+            } else {
+                icon.className = "fas fa-microphone text-gray-300";
+            }
+        }
+
+        function toggleSidebar() {
+            const el = document.getElementById('sidebar');
+            const open = el.style.transform === 'translateX(0px)';
+            el.style.transform = open ? 'translateX(-100%)' : 'translateX(0px)';
+            document.getElementById('overlay').style.display = open ? 'none' : 'block';
+        }
+
+        function saveSettings() {
+            STATE.config.key = document.getElementById('api-key').value;
+            STATE.config.model = document.getElementById('model-profile').value;
+            localStorage.setItem('cat_key', STATE.config.key);
+            localStorage.setItem('cat_model', STATE.config.model);
+            toggleSidebar();
+        }
+
+        // --- INITIALIZATION ---
+        window.onload = () => {
+            document.getElementById('api-key').value = STATE.config.key;
+            document.getElementById('model-profile').value = STATE.config.model;
+            document.getElementById('lang-tag').innerText = STATE.lang.toUpperCase();
+            
+            // Draggable speech bubble
+            const bubble = document.getElementById('speech-bubble');
+            let px=0, py=0, ix, iy;
+            document.getElementById('drag-handle').onpointerdown = (e) => {
+                e.preventDefault();
+                ix = e.clientX - px; iy = e.clientY - py;
+                document.onpointermove = (ev) => {
+                    px = ev.clientX - ix; py = ev.clientY - iy;
+                    bubble.style.transform = `translate3d(${px}px, ${py}px, 0)`;
+                };
+                document.onpointerup = () => document.onpointermove = null;
+            };
+
+            // Setup petting zone
+            setupPetting();
+            window.addEventListener('resize', setupPetting);
+
+            // Blinking animation
+            setInterval(() => {
+                document.getElementById('eyes').classList.add('blink');
+                setTimeout(() => document.getElementById('eyes').classList.remove('blink'), 150);
+            }, 4000);
+
+            // Tail wagging
+            const tail = document.getElementById('tail');
+            setInterval(() => {
+                tail.style.transform = `rotate(${Math.sin(Date.now() / 500) * 10}deg)`;
+            }, 50);
+        };
+    </script>
 </body>
 </html>
