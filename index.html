@@ -6,12 +6,12 @@
     <title>AI Cat Companion</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+Bengali:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         
         body { 
-            font-family: 'Inter', sans-serif; 
+            font-family: 'Inter', 'Noto Sans Bengali', sans-serif; 
             overflow: hidden; 
             height: 100dvh; 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -65,48 +65,93 @@
             transform: scale(1.05);
         }
         
-        .mobile-mode .caption-box {
+        /* Caption Box Styles */
+        .caption-box {
             position: fixed;
+            z-index: 100;
+            touch-action: none;
+        }
+        
+        .mobile-mode .caption-box {
             bottom: 140px;
             left: 50%;
             transform: translateX(-50%);
             width: 92%;
             max-width: 400px;
-            min-height: 120px;
-            resize: both;
-            overflow: hidden;
-            touch-action: none;
+            min-height: 140px;
         }
         
         .pc-mode .caption-box {
-            position: fixed;
             top: 100px;
             right: 40px;
             width: 380px;
             min-height: 160px;
         }
         
-        .caption-handle {
-            cursor: move;
-            padding: 8px;
-            margin: -8px -8px 8px -8px;
+        .caption-header {
+            cursor: grab;
+            padding: 12px;
+            margin: -4px -4px 8px -4px;
             border-bottom: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .resize-handle {
-            position: absolute;
-            bottom: 4px;
-            right: 4px;
-            width: 24px;
-            height: 24px;
-            cursor: nwse-resize;
+        .caption-header:active {
+            cursor: grabbing;
+        }
+        
+        .drag-indicator {
+            width: 40px;
+            height: 4px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 2px;
+            margin: 0 auto;
+        }
+        
+        /* Text Input Area */
+        .input-area {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .text-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid rgba(118, 75, 162, 0.2);
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            font-family: inherit;
+        }
+        
+        .text-input:focus {
+            border-color: #764ba2;
+        }
+        
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #999;
-            font-size: 12px;
+            transition: transform 0.2s;
         }
         
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Cat Container */
         #cat-container {
             position: relative;
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -114,26 +159,95 @@
             filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3));
         }
         
-        #cat-container:active { cursor: grabbing; }
+        #cat-container:active {
+            cursor: grabbing;
+        }
         
-        .env-party { background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%) !important; animation: partyBg 2s infinite alternate; }
-        .env-sleep { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important; }
-        .env-eat { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important; }
-        .env-dance { background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%) !important; animation: danceBg 1s infinite; }
+        /* Petting Animation */
+        .is-petting {
+            animation: petBounce 0.6s ease-in-out infinite;
+        }
         
-        @keyframes partyBg { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(30deg); } }
-        @keyframes danceBg { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+        @keyframes petBounce {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.05) rotate(-2deg); }
+            75% { transform: scale(1.05) rotate(2deg); }
+        }
         
+        .heart-particle {
+            position: absolute;
+            color: #e91e63;
+            font-size: 24px;
+            pointer-events: none;
+            animation: floatUp 1.5s ease-out forwards;
+            z-index: 50;
+        }
+        
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0); opacity: 1; }
+            50% { transform: translateY(-60px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-120px) scale(0.8); opacity: 0; }
+        }
+        
+        /* Environment Backgrounds */
+        .env-party {
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%) !important;
+            animation: partyBg 2s infinite alternate;
+        }
+        
+        .env-sleep {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+        }
+        
+        .env-eat {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+        }
+        
+        .env-dance {
+            background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%) !important;
+            animation: danceBg 1s infinite;
+        }
+        
+        @keyframes partyBg {
+            from { filter: hue-rotate(0deg); }
+            to { filter: hue-rotate(30deg); }
+        }
+        
+        @keyframes danceBg {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        /* Cat States */
         .is-dancing { animation: dance 0.5s infinite; }
         .is-sleeping { opacity: 0.6; filter: brightness(0.7); }
         .is-eating { animation: eat 1s infinite; }
         .is-partying { animation: party 0.3s infinite; }
         
-        @keyframes dance { 0%, 100% { transform: rotate(-10deg) translateY(0); } 50% { transform: rotate(10deg) translateY(-20px); } }
-        @keyframes eat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1) translateY(10px); } }
-        @keyframes party { 0% { transform: translate(0,0) rotate(0deg); } 25% { transform: translate(10px,-10px) rotate(5deg); } 50% { transform: translate(-10px,10px) rotate(-5deg); } 75% { transform: translate(10px,10px) rotate(5deg); } 100% { transform: translate(0,0) rotate(0deg); } }
+        @keyframes dance {
+            0%, 100% { transform: rotate(-10deg) translateY(0); }
+            50% { transform: rotate(10deg) translateY(-20px); }
+        }
         
-        .ear { transform-origin: bottom center; transition: transform 0.3s; }
+        @keyframes eat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1) translateY(10px); }
+        }
+        
+        @keyframes party {
+            0% { transform: translate(0,0) rotate(0deg); }
+            25% { transform: translate(10px,-10px) rotate(5deg); }
+            50% { transform: translate(-10px,10px) rotate(-5deg); }
+            75% { transform: translate(10px,10px) rotate(5deg); }
+            100% { transform: translate(0,0) rotate(0deg); }
+        }
+        
+        /* SVG Styles */
+        .ear {
+            transform-origin: bottom center;
+            transition: transform 0.3s;
+        }
+        
         .ear.left { transform-origin: 55px 45px; }
         .ear.right { transform-origin: 145px 45px; }
         
@@ -143,26 +257,57 @@
         .is-angry .ear.left { transform: rotate(-30deg); }
         .is-angry .ear.right { transform: rotate(30deg); }
         
-        @keyframes earWiggleLeft { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-15deg); } }
-        @keyframes earWiggleRight { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(15deg); } }
+        @keyframes earWiggleLeft {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(-15deg); }
+        }
         
-        #head-group { transform-origin: center 140px; transition: transform 0.3s; }
-        .is-talking #head-group { animation: headBob 0.6s infinite alternate; }
+        @keyframes earWiggleRight {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(15deg); }
+        }
         
-        @keyframes headBob { from { transform: rotate(-3deg) translateY(0); } to { transform: rotate(3deg) translateY(-3px); } }
+        #head-group {
+            transform-origin: center 140px;
+            transition: transform 0.3s;
+        }
         
-        .eye-lid { transform-origin: center; transition: all 0.1s; }
+        .is-talking #head-group {
+            animation: headBob 0.6s infinite alternate;
+        }
+        
+        @keyframes headBob {
+            from { transform: rotate(-3deg) translateY(0); }
+            to { transform: rotate(3deg) translateY(-3px); }
+        }
+        
+        .eye-lid {
+            transform-origin: center;
+            transition: all 0.1s;
+        }
+        
         .blink .eye-lid { transform: scaleY(0.1); }
         .is-sleeping .eye-lid { transform: scaleY(1); }
         
-        #mouth-path { transition: all 0.3s; fill: none; stroke: #1e293b; stroke-width: 3; stroke-linecap: round; }
+        #mouth-path {
+            transition: all 0.3s;
+            fill: none;
+            stroke: #1e293b;
+            stroke-width: 3;
+            stroke-linecap: round;
+        }
+        
         .is-happy #mouth-path { d: path("M85 138 Q100 155 115 138"); }
         .is-sad #mouth-path { d: path("M85 145 Q100 130 115 145"); }
         .is-angry #mouth-path { d: path("M90 140 L100 135 L110 140"); }
         .is-eating #mouth-path { d: path("M90 140 Q100 150 110 140"); animation: chew 0.5s infinite; }
         
-        @keyframes chew { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.8); } }
+        @keyframes chew {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(0.8); }
+        }
         
+        /* Action Menu */
         .action-menu {
             position: fixed;
             bottom: 20px;
@@ -197,6 +342,7 @@
         .action-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
         .action-btn:active { transform: scale(0.95); }
         
+        /* Settings Panel */
         #settings-panel {
             position: fixed;
             inset: 0;
@@ -223,65 +369,137 @@
         .setting-input { width: 100%; padding: 12px 16px; border: 2px solid rgba(118, 75, 162, 0.2); border-radius: 12px; font-size: 14px; outline: none; transition: all 0.3s; }
         .setting-input:focus { border-color: #764ba2; box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.1); }
         
-        .particle { position: absolute; pointer-events: none; animation: float 3s ease-in infinite; }
-        @keyframes float { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(-100px) rotate(360deg); opacity: 0; } }
+        /* Mic Button */
+        .mic-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            color: #764ba2;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         
-        .mic-btn { width: 56px; height: 56px; border-radius: 50%; border: none; background: white; color: #764ba2; font-size: 20px; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.3); transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
         .mic-btn:hover { transform: scale(1.1); }
         .mic-btn:active { transform: scale(0.9); }
         .mic-btn.listening { animation: pulse 1.5s infinite; color: #ff4757; }
         
-        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7); } 50% { box-shadow: 0 0 0 20px rgba(255, 71, 87, 0); } }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7); }
+            50% { box-shadow: 0 0 0 20px rgba(255, 71, 87, 0); }
+        }
         
-        .lang-toggle { position: fixed; top: 20px; left: 20px; z-index: 1000; }
+        /* Language Toggle */
+        .lang-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        
         .hidden { display: none !important; }
         
-        .close-btn { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border-radius: 50%; border: none; background: rgba(0,0,0,0.1); color: #666; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0,0,0,0.1);
+            color: #666;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
         .close-btn:hover { background: rgba(0,0,0,0.2); }
+        
+        /* Pet Zone Overlay */
+        .pet-zone {
+            position: absolute;
+            top: 20%;
+            left: 15%;
+            width: 70%;
+            height: 50%;
+            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23e91e63' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'/%3E%3C/svg%3E") 16 16, auto;
+            z-index: 10;
+        }
         
         @media (max-width: 768px) {
             .pc-mode .caption-box { width: 90%; right: 5%; top: 80px; }
-            .action-menu { padding: 10px; gap: 8px; }
+            .action-menu { padding: 10px; gap: 8px; bottom: 10px; }
             .action-btn { padding: 10px 14px; font-size: 12px; }
             .device-switch { top: 10px; right: 10px; }
             .device-btn { padding: 8px 14px; font-size: 12px; }
+            .mobile-mode .caption-box { bottom: 120px; }
         }
     </style>
 </head>
 <body class="pc-mode">
 
+    <!-- Device Switch -->
     <div class="device-switch glass">
         <button class="device-btn active" onclick="switchDevice('pc')"><i class="fas fa-desktop"></i> PC</button>
         <button class="device-btn" onclick="switchDevice('mobile')"><i class="fas fa-mobile-alt"></i> Mobile</button>
     </div>
 
+    <!-- Language Toggle (Mobile Only) -->
     <div class="lang-toggle glass hidden" id="mobile-lang-toggle" style="border-radius: 15px; padding: 8px;">
-        <button onclick="toggleMobileLang()" class="w-full px-4 py-2 bg-white/20 rounded-lg text-white font-bold text-sm"><span id="current-lang">BN</span> <i class="fas fa-exchange-alt ml-2"></i></button>
+        <button onclick="toggleMobileLang()" class="w-full px-4 py-2 bg-white/20 rounded-lg text-white font-bold text-sm">
+            <span id="current-lang">BN</span> <i class="fas fa-exchange-alt ml-2"></i>
+        </button>
     </div>
 
+    <!-- Main Content -->
     <div class="w-full h-full flex flex-col items-center justify-center relative">
         
+        <!-- Caption Box -->
         <div id="caption-box" class="caption-box glass-panel rounded-3xl p-5 shadow-2xl">
-            <div class="caption-handle flex justify-between items-center">
+            <div class="caption-header" id="caption-header">
                 <div class="flex items-center gap-2">
                     <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                     <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Live Caption</span>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="toggleSettings()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors"><i class="fas fa-cog text-xs"></i></button>
-                </div>
+                <button onclick="toggleSettings()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors">
+                    <i class="fas fa-cog text-xs"></i>
+                </button>
             </div>
             
-            <div class="mt-3 space-y-3">
+            <div class="space-y-3">
+                <!-- English Text -->
                 <div>
+                    <p class="text-[10px] font-bold text-indigo-400 uppercase mb-1">English</p>
                     <p id="caption-text" class="text-gray-800 font-semibold text-lg leading-snug">Hello! I'm your AI Cat. How can I help you today?</p>
                 </div>
-                <div id="translation-box" class="hidden pt-2 border-t border-gray-200">
-                    <p class="text-xs font-bold text-purple-400 uppercase mb-1">Translation</p>
-                    <p id="translation-text" class="text-gray-600 text-base">হ্যালো! আমি তোমার এআই বিড়াল। আজ আমি কিভাবে সাহায্য করতে পারি?</p>
+                
+                <!-- Bengali Translation -->
+                <div id="translation-box" class="hidden pt-3 border-t border-gray-200">
+                    <p class="text-[10px] font-bold text-pink-400 uppercase mb-1">বাংলা অনুবাদ</p>
+                    <p id="translation-text" class="text-gray-600 text-base" style="font-family: 'Noto Sans Bengali', sans-serif;">
+                        হ্যালো! আমি তোমার এআই বিড়াল। আজ আমি কিভাবে সাহায্য করতে পারি?
+                    </p>
                 </div>
             </div>
             
+            <!-- Text Input Area -->
+            <div class="input-area">
+                <input type="text" id="text-input" class="text-input" placeholder="Type your message..." onkeypress="if(event.key==='Enter')sendText()">
+                <button onclick="sendText()" class="send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            
+            <!-- Status Bar -->
             <div class="mt-4 flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <span id="emotion-badge" class="px-3 py-1 rounded-full bg-purple-100 text-purple-600 text-xs font-bold">Happy</span>
@@ -289,13 +507,17 @@
                         <div id="mood-bar" class="h-full bg-gradient-to-r from-purple-500 to-pink-500 w-3/4 transition-all duration-500"></div>
                     </div>
                 </div>
-                <button onclick="startVoice()" class="mic-btn"><i class="fas fa-microphone"></i></button>
+                <button onclick="toggleVoice()" id="mic-btn" class="mic-btn">
+                    <i class="fas fa-microphone" id="mic-icon"></i>
+                </button>
             </div>
-            
-            <div class="resize-handle mobile-only"><i class="fas fa-expand"></i></div>
         </div>
 
-        <div id="cat-container" class="w-80 h-80 lg:w-96 lg:h-96 mt-8">
+        <!-- Cat Container -->
+        <div id="cat-container" class="w-80 h-80 lg:w-96 lg:h-96 mt-8 relative">
+            <!-- Pet Zone -->
+            <div class="pet-zone" id="pet-zone"></div>
+            
             <svg viewBox="0 0 200 220" class="w-full h-full">
                 <ellipse cx="100" cy="200" rx="60" ry="15" fill="rgba(0,0,0,0.2)" />
                 <path id="tail" d="M140 180 Q170 160 160 130 Q150 100 140 120" fill="none" stroke="#4f46e5" stroke-width="10" stroke-linecap="round" style="transition: all 0.5s;"/>
@@ -339,6 +561,7 @@
 
     </div>
 
+    <!-- Action Menu -->
     <div class="action-menu glass">
         <button class="action-btn" onclick="performAction('dance')"><i class="fas fa-music"></i> Dance</button>
         <button class="action-btn" onclick="performAction('sleep')"><i class="fas fa-bed"></i> Sleep</button>
@@ -346,15 +569,16 @@
         <button class="action-btn" onclick="performAction('party')"><i class="fas fa-glass-cheers"></i> Party</button>
     </div>
 
-    <div id="settings-panel">
+    <!-- Settings Panel -->
+    <div id="settings-panel" onclick="if(event.target===this)toggleSettings()">
         <div class="settings-content glass-panel relative">
             <button class="close-btn" onclick="toggleSettings()"><i class="fas fa-times"></i></button>
             
             <h2 class="text-2xl font-black text-gray-800 mb-6">Settings</h2>
 
             <div class="setting-item">
-                <label class="setting-label">API Key</label>
-                <input type="password" id="api-key" class="setting-input" placeholder="Enter your API key...">
+                <label class="setting-label">OpenRouter API Key</label>
+                <input type="password" id="api-key" class="setting-input" placeholder="sk-or-...">
             </div>
 
             <div class="setting-item">
@@ -377,16 +601,14 @@
                 <input type="range" id="cat-size" min="200" max="500" value="350" class="w-full accent-purple-600" oninput="updateCatSize(this.value)">
             </div>
 
-            <div class="setting-item">
-                <label class="setting-label">Caption Opacity</label>
-                <input type="range" id="caption-opacity" min="50" max="100" value="95" class="w-full accent-purple-600" oninput="updateCaptionOpacity(this.value)">
-            </div>
-
-            <button onclick="saveSettings()" class="w-full mt-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]">Save Settings</button>
+            <button onclick="saveSettings()" class="w-full mt-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]">
+                Save Settings
+            </button>
         </div>
     </div>
 
     <script>
+        // State Management
         const STATE = {
             device: 'pc',
             lang: 'en-US',
@@ -399,48 +621,57 @@
                 apiKey: localStorage.getItem('cat_api_key') || '',
                 model: localStorage.getItem('cat_model') || 'google/gemini-2.0-flash-exp:free',
                 theme: localStorage.getItem('cat_theme') || 'purple',
-                catSize: localStorage.getItem('cat_size') || '350',
-                captionOpacity: localStorage.getItem('cat_opacity') || '95'
+                catSize: localStorage.getItem('cat_size') || '350'
             }
         };
 
+        // Initialize
         window.onload = () => {
             document.getElementById('api-key').value = STATE.config.apiKey;
             document.getElementById('model-id').value = STATE.config.model;
             document.getElementById('cat-size').value = STATE.config.catSize;
-            document.getElementById('caption-opacity').value = STATE.config.captionOpacity;
             updateCatSize(STATE.config.catSize);
-            updateCaptionOpacity(STATE.config.captionOpacity);
             applyTheme(STATE.config.theme);
+            
+            // Setup drag
+            setupDrag();
+            
+            // Setup petting
+            setupPetting();
+            
+            // Start blink
             setInterval(blink, 4000);
+            
+            // Setup continuous listening restart
+            setupContinuousListening();
         };
 
+        // Device Switching
         function switchDevice(device) {
             STATE.device = device;
             document.body.className = device + '-mode';
+            
             document.querySelectorAll('.device-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if(btn.textContent.toLowerCase().includes(device)) btn.classList.add('active');
             });
             
             const mobileOnly = document.querySelectorAll('.mobile-only');
-            const captionBox = document.getElementById('caption-box');
+            const translationBox = document.getElementById('translation-box');
+            const langToggle = document.getElementById('mobile-lang-toggle');
             
             if(device === 'mobile') {
                 mobileOnly.forEach(el => el.classList.remove('hidden'));
-                document.getElementById('mobile-lang-toggle').classList.remove('hidden');
-                document.getElementById('translation-box').classList.remove('hidden');
+                langToggle.classList.remove('hidden');
+                translationBox.classList.remove('hidden');
                 STATE.lang = STATE.mobileLang;
-                captionBox.style.cursor = 'move';
-                makeDraggable(captionBox);
             } else {
                 mobileOnly.forEach(el => el.classList.add('hidden'));
-                document.getElementById('mobile-lang-toggle').classList.add('hidden');
-                document.getElementById('translation-box').classList.add('hidden');
+                langToggle.classList.add('hidden');
+                translationBox.classList.add('hidden');
                 STATE.lang = 'en-US';
-                captionBox.style.cursor = 'default';
-                captionBox.style.transform = 'none';
             }
+            
             document.body.classList.remove('env-party', 'env-sleep', 'env-eat', 'env-dance');
         }
 
@@ -450,43 +681,130 @@
             document.getElementById('current-lang').textContent = STATE.mobileLang === 'bn-BD' ? 'BN' : 'EN';
         }
 
-        function makeDraggable(element) {
-            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            const handle = element.querySelector('.caption-handle');
+        // Drag Functionality
+        function setupDrag() {
+            const captionBox = document.getElementById('caption-box');
+            const header = document.getElementById('caption-header');
             
-            handle.onmousedown = handle.ontouchstart = dragMouseDown;
+            let isDragging = false;
+            let currentX, currentY, initialX, initialY;
+            let xOffset = 0, yOffset = 0;
             
-            function dragMouseDown(e) {
-                e = e || window.event;
+            header.addEventListener('mousedown', dragStart);
+            header.addEventListener('touchstart', dragStart, {passive: false});
+            
+            function dragStart(e) {
+                if(STATE.device === 'pc') return; // Only drag in mobile mode
+                
+                if(e.type === 'touchstart') {
+                    initialX = e.touches[0].clientX - xOffset;
+                    initialY = e.touches[0].clientY - yOffset;
+                } else {
+                    initialX = e.clientX - xOffset;
+                    initialY = e.clientY - yOffset;
+                }
+                
+                isDragging = true;
+                header.style.cursor = 'grabbing';
+            }
+            
+            document.addEventListener('mousemove', dragMove);
+            document.addEventListener('touchmove', dragMove, {passive: false});
+            
+            function dragMove(e) {
+                if(!isDragging) return;
                 e.preventDefault();
-                pos3 = e.clientX || e.touches[0].clientX;
-                pos4 = e.clientY || e.touches[0].clientY;
-                document.onmouseup = document.ontouchend = closeDragElement;
-                document.onmousemove = document.ontouchmove = elementDrag;
+                
+                if(e.type === 'touchmove') {
+                    currentX = e.touches[0].clientX - initialX;
+                    currentY = e.touches[0].clientY - initialY;
+                } else {
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                }
+                
+                xOffset = currentX;
+                yOffset = currentY;
+                
+                captionBox.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
             }
             
-            function elementDrag(e) {
-                e = e || window.event;
-                const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
-                const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
-                pos1 = pos3 - clientX;
-                pos2 = pos4 - clientY;
-                pos3 = clientX;
-                pos4 = clientY;
-                element.style.top = (element.offsetTop - pos2) + "px";
-                element.style.left = (element.offsetLeft - pos1) + "px";
-                element.style.transform = 'none';
-            }
+            document.addEventListener('mouseup', dragEnd);
+            document.addEventListener('touchend', dragEnd);
             
-            function closeDragElement() {
-                document.onmouseup = document.ontouchend = null;
-                document.onmousemove = document.ontouchmove = null;
+            function dragEnd() {
+                initialX = currentX;
+                initialY = currentY;
+                isDragging = false;
+                header.style.cursor = 'grab';
             }
         }
 
+        // Petting Functionality
+        function setupPetting() {
+            const petZone = document.getElementById('pet-zone');
+            const catContainer = document.getElementById('cat-container');
+            
+            let petTimeout;
+            
+            // Mouse events
+            petZone.addEventListener('mouseenter', startPetting);
+            petZone.addEventListener('mouseleave', stopPetting);
+            petZone.addEventListener('mousemove', whilePetting);
+            
+            // Touch events
+            petZone.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                startPetting();
+            }, {passive: false});
+            
+            petZone.addEventListener('touchend', stopPetting);
+            petZone.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                whilePetting();
+            }, {passive: false});
+            
+            function startPetting() {
+                catContainer.classList.add('is-petting');
+                createHeart();
+                speak("Purr... purr...", true);
+                
+                // Create hearts continuously while petting
+                petTimeout = setInterval(() => {
+                    createHeart();
+                }, 800);
+            }
+            
+            function whilePetting() {
+                if(!catContainer.classList.contains('is-petting')) {
+                    catContainer.classList.add('is-petting');
+                }
+            }
+            
+            function stopPetting() {
+                catContainer.classList.remove('is-petting');
+                clearInterval(petTimeout);
+            }
+        }
+
+        function createHeart() {
+            const catContainer = document.getElementById('cat-container');
+            const rect = catContainer.getBoundingClientRect();
+            
+            const heart = document.createElement('div');
+            heart.className = 'heart-particle';
+            heart.innerHTML = '❤️';
+            heart.style.left = (rect.left + rect.width/2 + (Math.random()*60 - 30)) + 'px';
+            heart.style.top = (rect.top + rect.height/3) + 'px';
+            document.body.appendChild(heart);
+            
+            setTimeout(() => heart.remove(), 1500);
+        }
+
+        // Actions
         function performAction(action) {
             const container = document.getElementById('cat-container');
-            container.classList.remove('is-dancing', 'is-sleeping', 'is-eating', 'is-partying');
+            container.classList.remove('is-dancing', 'is-sleeping', 'is-eating', 'is-partying', 'is-petting');
             document.body.classList.remove('env-party', 'env-sleep', 'env-eat', 'env-dance');
             
             STATE.currentAction = action;
@@ -510,7 +828,6 @@
                 speak(resp.en);
             }
             
-            createParticles(action);
             setTimeout(() => {
                 container.classList.remove('is-' + action);
                 document.body.classList.remove(resp.env);
@@ -518,24 +835,14 @@
             }, 5000);
         }
 
-        function createParticles(type) {
-            const icons = { dance: ['🎵', '🎶', '💃'], sleep: ['💤', '🌙', '⭐'], eat: ['🐟', '🍖', '😋'], party: ['🎉', '🎊', '🎈', '✨'] };
-            for(let i=0; i<5; i++) {
-                setTimeout(() => {
-                    const p = document.createElement('div');
-                    p.className = 'particle';
-                    p.textContent = icons[type][Math.floor(Math.random()*icons[type].length)];
-                    p.style.left = (45 + Math.random()*10) + '%';
-                    p.style.bottom = '35%';
-                    p.style.fontSize = (24 + Math.random()*16) + 'px';
-                    document.body.appendChild(p);
-                    setTimeout(() => p.remove(), 3000);
-                }, i*200);
-            }
-        }
-
+        // AI Communication
         async function sendToAI(text) {
-            if(!STATE.config.apiKey) { toggleSettings(); return; }
+            if(!text.trim()) return;
+            if(!STATE.config.apiKey) {
+                toggleSettings();
+                return;
+            }
+            
             updateCaption("Thinking...", STATE.device === 'mobile' ? "ভাবছি..." : null);
             
             const prompt = STATE.device === 'mobile' 
@@ -575,50 +882,138 @@
             }
         }
 
+        // Text Input
+        function sendText() {
+            const input = document.getElementById('text-input');
+            const text = input.value;
+            if(!text.trim()) return;
+            
+            sendToAI(text);
+            input.value = '';
+            input.blur();
+        }
+
+        // Voice Recognition - Continuous
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
         
         if(SpeechRecognition) {
             recognition = new SpeechRecognition();
-            recognition.continuous = false;
+            recognition.continuous = true;
             recognition.interimResults = false;
+            recognition.lang = STATE.lang;
             
             recognition.onstart = () => {
                 STATE.isListening = true;
-                document.querySelector('.mic-btn').classList.add('listening');
-                updateCaption("Listening...", "শুনছি...");
+                updateMicUI(true);
             };
             
-            recognition.onresult = (e) => sendToAI(e.results[0][0].transcript);
+            recognition.onresult = (e) => {
+                const text = e.results[e.results.length - 1][0].transcript;
+                sendToAI(text);
+            };
+            
+            recognition.onerror = (e) => {
+                console.log('Speech error:', e.error);
+                // Auto restart on error unless it's not allowed
+                if(e.error !== 'not-allowed' && e.error !== 'service-not-allowed') {
+                    setTimeout(() => {
+                        if(STATE.isListening) recognition.start();
+                    }, 500);
+                }
+            };
+            
             recognition.onend = () => {
-                STATE.isListening = false;
-                document.querySelector('.mic-btn').classList.remove('listening');
+                // Auto restart if still in listening mode
+                if(STATE.isListening) {
+                    setTimeout(() => {
+                        try { recognition.start(); } catch(e) {}
+                    }, 300);
+                } else {
+                    updateMicUI(false);
+                }
             };
         }
         
-        function startVoice() {
-            if(!recognition) { alert("Voice recognition not supported"); return; }
-            recognition.lang = STATE.lang;
-            recognition.start();
+        function setupContinuousListening() {
+            // This ensures voice keeps listening after each phrase
+        }
+        
+        function toggleVoice() {
+            if(!recognition) {
+                alert("Voice recognition not supported in this browser");
+                return;
+            }
+            
+            STATE.isListening = !STATE.isListening;
+            
+            if(STATE.isListening) {
+                recognition.lang = STATE.lang;
+                try { recognition.start(); } catch(e) {}
+            } else {
+                recognition.stop();
+                updateMicUI(false);
+            }
+        }
+        
+        function updateMicUI(isListening) {
+            const btn = document.getElementById('mic-btn');
+            const icon = document.getElementById('mic-icon');
+            
+            if(isListening) {
+                btn.classList.add('listening');
+                icon.className = 'fas fa-microphone-slash';
+            } else {
+                btn.classList.remove('listening');
+                icon.className = 'fas fa-microphone';
+            }
         }
 
-        function speak(text) {
+        // Speech Synthesis
+        function speak(text, forceEnglish = false) {
             if(!text) return;
             window.speechSynthesis.cancel();
-            const utt = new SpeechSynthesisUtterance(text);
-            utt.lang = STATE.lang;
-            utt.rate = 1.1;
-            utt.pitch = 1.2;
-            window.speechSynthesis.speak(utt);
-            document.getElementById('cat-container').classList.add('is-talking');
-            setTimeout(() => document.getElementById('cat-container').classList.remove('is-talking'), text.length * 80);
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = forceEnglish ? 'en-US' : STATE.lang;
+            utterance.rate = 1.1;
+            utterance.pitch = 1.2;
+            
+            utterance.onstart = () => {
+                document.getElementById('cat-container').classList.add('is-talking');
+            };
+            
+            utterance.onend = () => {
+                document.getElementById('cat-container').classList.remove('is-talking');
+            };
+            
+            window.speechSynthesis.speak(utterance);
         }
 
-        function updateCaption(text, translation = null) {
-            document.getElementById('caption-text').textContent = text;
-            if(translation) document.getElementById('translation-text').textContent = translation;
+        // UI Updates
+        function updateCaption(enText, bnText = null) {
+            document.getElementById('caption-text').textContent = enText;
+            if(bnText) {
+                document.getElementById('translation-text').textContent = bnText;
+            }
         }
 
+        function updateEmotion(emotion) {
+            STATE.emotion = emotion;
+            const badge = document.getElementById('emotion-badge');
+            const emotions = {
+                happy: { text: 'Happy', class: 'bg-purple-100 text-purple-600' },
+                sad: { text: 'Sad', class: 'bg-blue-100 text-blue-600' },
+                angry: { text: 'Angry', class: 'bg-red-100 text-red-600' },
+                love: { text: 'Loved', class: 'bg-pink-100 text-pink-600' }
+            };
+            
+            const emo = emotions[emotion] || emotions.happy;
+            badge.textContent = emo.text;
+            badge.className = `px-3 py-1 rounded-full text-xs font-bold ${emo.class}`;
+        }
+
+        // Settings
         function toggleSettings() {
             const panel = document.getElementById('settings-panel');
             panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
@@ -627,17 +1022,22 @@
         function saveSettings() {
             STATE.config.apiKey = document.getElementById('api-key').value;
             STATE.config.model = document.getElementById('model-id').value;
+            
             localStorage.setItem('cat_api_key', STATE.config.apiKey);
             localStorage.setItem('cat_model', STATE.config.model);
             localStorage.setItem('cat_theme', STATE.config.theme);
             localStorage.setItem('cat_size', STATE.config.catSize);
-            localStorage.setItem('cat_opacity', STATE.config.captionOpacity);
+            
             toggleSettings();
             updateCaption("Settings saved!", "সেটিংস সংরক্ষিত!");
         }
 
         function setTheme(color) {
             STATE.config.theme = color;
+            applyTheme(color);
+        }
+
+        function applyTheme(color) {
             const themes = {
                 purple: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 blue: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
@@ -647,18 +1047,14 @@
             document.body.style.background = themes[color];
         }
 
-        function applyTheme(color) { setTheme(color); }
-
         function updateCatSize(size) {
             const container = document.getElementById('cat-container');
             container.style.width = size + 'px';
             container.style.height = size + 'px';
+            STATE.config.catSize = size;
         }
 
-        function updateCaptionOpacity(val) {
-            document.querySelector('.glass-panel').style.background = `rgba(255,255,255,${val/100})`;
-        }
-
+        // Utilities
         function blink() {
             if(STATE.currentAction === 'sleep') return;
             const eyes = document.getElementById('eyes');
