@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Cat | Text & Voice</title>
+    <title>AI Cat | Multi-Language Support</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -15,10 +15,7 @@
             backdrop-filter: blur(5px);
             transition: all 0.3s ease;
         }
-        #chat-bar:focus-within {
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
-            transform: scale(1.02);
-        }
+        #chat-bar:focus-within { box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2); transform: scale(1.01); }
 
         /* Sidebar & Overlay */
         #sidebar { transition: transform 0.3s ease; z-index: 1000; }
@@ -32,7 +29,6 @@
         .eye-lid { transform-origin: center; transition: transform 0.1s; }
         .blink .eye-lid { transform: scaleY(0.1); }
         
-        /* Draggable Bubble */
         #speech-bubble { position: absolute; z-index: 80; width: 85vw; max-width: 320px; touch-action: none; }
     </style>
 </head>
@@ -43,37 +39,50 @@
     <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl transform -translate-x-full">
         <div class="p-6 h-full flex flex-col">
             <h2 class="text-xl font-black text-indigo-600 mb-6 italic">SETTINGS</h2>
-            <div class="space-y-4 flex-1">
+            
+            <div class="space-y-5 flex-1 overflow-y-auto">
                 <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase">OpenRouter API Key</label>
-                    <input type="password" id="api-key" placeholder="sk-or-..." class="w-full mt-1 p-3 bg-gray-100 rounded-xl border-none text-xs">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">OpenRouter API Key</label>
+                    <input type="password" id="api-key" placeholder="sk-or-..." class="w-full mt-1 p-3 bg-gray-100 rounded-xl border-none text-xs outline-none focus:ring-2 ring-indigo-500">
                 </div>
+
                 <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase">Model ID</label>
-                    <input type="text" id="model-profile" value="google/gemini-2.0-flash-exp:free" class="w-full mt-1 p-3 bg-gray-100 rounded-xl border-none text-xs">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Model ID</label>
+                    <input type="text" id="model-profile" value="google/gemini-2.0-flash-exp:free" class="w-full mt-1 p-3 bg-gray-100 rounded-xl border-none text-xs outline-none focus:ring-2 ring-indigo-500">
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cat Language</label>
+                    <div class="relative mt-1">
+                        <select id="lang-select" class="w-full p-3 bg-gray-100 rounded-xl border-none text-xs appearance-none outline-none focus:ring-2 ring-indigo-500 font-bold text-gray-600">
+                            <option value="bn-BD">Bengali (বাংলা)</option>
+                            <option value="en-US">English (USA)</option>
+                            <option value="hi-IN">Hindi (हिंदी)</option>
+                            <option value="es-ES">Spanish (Español)</option>
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-3 text-gray-400 text-xs pointer-events-none"></i>
+                    </div>
                 </div>
             </div>
-            <button onclick="saveSettings()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold text-sm">Save Settings</button>
+
+            <button onclick="saveSettings()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold text-sm shadow-lg active:scale-95 transition-all mt-4">Save Changes</button>
         </div>
     </aside>
 
     <main class="flex flex-col h-full relative">
         
         <header class="absolute top-0 left-0 w-full p-4 z-50 flex justify-between items-start pointer-events-none">
-            
             <div class="flex items-center gap-2 pointer-events-auto w-full max-w-[85%]">
-                <button onclick="toggleSidebar()" class="w-10 h-10 flex-shrink-0 bg-white rounded-xl shadow text-indigo-600 active:scale-95 transition-transform">
-                    <i class="fas fa-cog"></i>
+                <button onclick="toggleSidebar()" class="w-10 h-10 flex-shrink-0 bg-white rounded-xl shadow text-indigo-600 active:scale-95 transition-transform flex items-center justify-center">
+                    <i class="fas fa-sliders-h"></i>
                 </button>
-
                 <div id="chat-bar" class="flex-1 flex items-center bg-white rounded-xl shadow p-1 pl-3 h-10">
-                    <input type="text" id="text-input" placeholder="Type here..." class="flex-1 bg-transparent border-none text-sm outline-none text-gray-700 placeholder-gray-400" onkeydown="checkEnter(event)">
+                    <input type="text" id="text-input" placeholder="Type or ask..." class="flex-1 bg-transparent border-none text-sm outline-none text-gray-700 placeholder-gray-400" onkeydown="checkEnter(event)">
                     <button onclick="sendText()" class="w-8 h-8 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-lg ml-1 hover:bg-indigo-600 hover:text-white transition-colors">
                         <i class="fas fa-paper-plane text-xs"></i>
                     </button>
                 </div>
             </div>
-
             <div id="status-chip" class="hidden sm:block pointer-events-auto px-3 py-1 bg-white/80 backdrop-blur rounded-full text-[10px] font-bold text-gray-400 uppercase shadow-sm">Ready</div>
         </header>
 
@@ -83,7 +92,7 @@
                 <div class="bg-white/90 p-4 rounded-[1.5rem] shadow-xl border border-white/50">
                     <div id="drag-handle" class="w-8 h-1 bg-gray-200 mx-auto mb-2 rounded-full cursor-move"></div>
                     <p id="user-transcript" class="text-indigo-600 font-bold text-sm mb-1 min-h-[1rem]"></p>
-                    <p id="ai-caption" class="text-gray-500 text-xs italic">Meow! You can talk or type to me.</p>
+                    <p id="ai-caption" class="text-gray-500 text-xs italic">Meow! Select your language in settings.</p>
                 </div>
             </div>
 
@@ -117,28 +126,21 @@
             listening: false,
             config: { 
                 key: localStorage.getItem('cat_key') || '', 
-                model: localStorage.getItem('cat_model') || 'google/gemini-2.0-flash-exp:free' 
+                model: localStorage.getItem('cat_model') || 'google/gemini-2.0-flash-exp:free',
+                lang: localStorage.getItem('cat_lang') || 'bn-BD'
             }
         };
 
-        // --- TEXT INPUT HANDLING ---
-        function sendText() {
-            const input = document.getElementById('text-input');
-            const text = input.value.trim();
-            if (!text) return;
-            
-            document.getElementById('user-transcript').innerText = text;
-            input.value = ''; // Clear input
-            input.blur(); // Hide keyboard on mobile
-            
-            callAI(text); // Use same AI logic
+        // --- HELPER: GET PROMPT BASED ON LANGUAGE ---
+        function getSystemPrompt() {
+            const l = STATE.config.lang;
+            if (l.includes('bn')) return 'You are a cat. Reply in Bengali (Bangla). Keep it very short.';
+            if (l.includes('hi')) return 'You are a cat. Reply in Hindi. Keep it very short.';
+            if (l.includes('es')) return 'You are a cat. Reply in Spanish. Keep it very short.';
+            return 'You are a cat. Reply in English. Keep it very short.';
         }
 
-        function checkEnter(e) {
-            if (e.key === 'Enter') sendText();
-        }
-
-        // --- API & AI ---
+        // --- API CALL ---
         async function callAI(text) {
             if (!STATE.config.key) return alert("API Key Missing! Check Settings.");
             
@@ -149,7 +151,10 @@
                     headers: { "Authorization": `Bearer ${STATE.config.key}`, "Content-Type": "application/json" },
                     body: JSON.stringify({
                         model: STATE.config.model,
-                        messages: [{ role: 'system', content: 'You are a cat. Respond in Bengali. Keep it very short.' }, { role: 'user', content: text }]
+                        messages: [
+                            { role: 'system', content: getSystemPrompt() },
+                            { role: 'user', content: text }
+                        ]
                     })
                 });
 
@@ -160,30 +165,31 @@
 
             } catch (err) {
                 console.error(err);
-                document.getElementById('ai-caption').innerText = "Error connecting to brain...";
                 updateUI('STANDBY');
             }
         }
 
-        // --- SPEECH ---
+        // --- SPEECH OUTPUT ---
         function speak(text) {
             window.speechSynthesis.cancel();
             const ut = new SpeechSynthesisUtterance(text);
-            ut.lang = 'bn-BD';
+            ut.lang = STATE.config.lang; // Use selected language
             
             ut.onstart = () => updateUI('SPEAKING');
             ut.onend = () => {
                 updateUI('STANDBY');
-                if (STATE.listening) rec.start(); // Resume listening if mic was on
+                if (STATE.listening) rec.start(); 
             };
-            
             window.speechSynthesis.speak(ut);
         }
 
+        // --- SPEECH INPUT ---
         const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
         const rec = Rec ? new Rec() : null;
-        if(rec) {
-            rec.lang = 'bn-BD';
+        
+        function setupRec() {
+            if(!rec) return;
+            rec.lang = STATE.config.lang; // Update lang config
             rec.continuous = false;
             rec.onstart = () => updateUI('LISTENING');
             rec.onresult = (e) => {
@@ -195,20 +201,38 @@
                 if(STATE.listening) setTimeout(() => { try{rec.start()}catch(e){} }, 300);
             };
         }
+        setupRec(); // Init
 
         function toggleMic() {
             if(!rec) return alert("Mic not supported");
             STATE.listening = !STATE.listening;
+            
+            // Ensure lang is set before starting
+            rec.lang = STATE.config.lang; 
+            
             STATE.listening ? rec.start() : rec.stop();
             updateUI(STATE.listening ? 'LISTENING' : 'STANDBY');
         }
 
-        // --- UI ---
+        // --- TEXT INPUT ---
+        function sendText() {
+            const input = document.getElementById('text-input');
+            const val = input.value.trim();
+            if(!val) return;
+            
+            document.getElementById('user-transcript').innerText = val;
+            input.value = '';
+            input.blur();
+            callAI(val);
+        }
+        function checkEnter(e) { if(e.key==='Enter') sendText(); }
+
+        // --- UI & SETTINGS ---
         function updateUI(status) {
             const icon = document.getElementById('mic-icon');
             const body = document.body;
             body.classList.remove('is-talking');
-
+            
             if (status === 'LISTENING') icon.className = "fas fa-microphone text-indigo-600";
             else if (status === 'SPEAKING') {
                 body.classList.add('is-talking');
@@ -228,16 +252,25 @@
         function saveSettings() {
             STATE.config.key = document.getElementById('api-key').value;
             STATE.config.model = document.getElementById('model-profile').value;
+            STATE.config.lang = document.getElementById('lang-select').value;
+            
             localStorage.setItem('cat_key', STATE.config.key);
             localStorage.setItem('cat_model', STATE.config.model);
+            localStorage.setItem('cat_lang', STATE.config.lang);
+            
+            // Refresh Mic Settings
+            if(rec) rec.lang = STATE.config.lang;
+            
             toggleSidebar();
+            alert(`Saved! Language set to: ${STATE.config.lang}`);
         }
 
         window.onload = () => {
             document.getElementById('api-key').value = STATE.config.key;
             document.getElementById('model-profile').value = STATE.config.model;
+            document.getElementById('lang-select').value = STATE.config.lang;
             
-            // Drag Logic for Bubble
+            // Draggable
             const bubble = document.getElementById('speech-bubble');
             let px=0, py=0, ix, iy;
             document.getElementById('drag-handle').onpointerdown = (e) => {
@@ -249,6 +282,7 @@
                 document.onpointerup = () => document.onpointermove = null;
             };
 
+            // Blink
             setInterval(() => {
                 document.getElementById('eyes').classList.add('blink');
                 setTimeout(() => document.getElementById('eyes').classList.remove('blink'), 150);
