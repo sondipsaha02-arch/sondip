@@ -34,6 +34,7 @@
             border: 1px solid rgba(255, 255, 255, 0.5);
         }
         
+        /* Device Switch */
         .device-switch {
             position: fixed;
             top: 20px;
@@ -65,7 +66,7 @@
             transform: scale(1.05);
         }
         
-        /* Caption Box Styles */
+        /* Caption Box */
         .caption-box {
             position: fixed;
             z-index: 100;
@@ -78,14 +79,14 @@
             transform: translateX(-50%);
             width: 92%;
             max-width: 400px;
-            min-height: 140px;
+            min-height: 160px;
         }
         
         .pc-mode .caption-box {
             top: 100px;
             right: 40px;
             width: 380px;
-            min-height: 160px;
+            min-height: 180px;
         }
         
         .caption-header {
@@ -102,15 +103,7 @@
             cursor: grabbing;
         }
         
-        .drag-indicator {
-            width: 40px;
-            height: 4px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 2px;
-            margin: 0 auto;
-        }
-        
-        /* Text Input Area */
+        /* Text Input */
         .input-area {
             display: flex;
             gap: 8px;
@@ -151,29 +144,41 @@
             transform: scale(0.95);
         }
         
-        /* Cat Container */
-        #cat-container {
+        /* Settings Panel */
+        #sidebar {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+        }
+        
+        #overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            z-index: 900;
+        }
+        
+        /* Cat Stage */
+        #cat-stage {
+            transform-origin: bottom center;
+            cursor: pointer;
             position: relative;
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            cursor: grab;
-            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3));
         }
         
-        #cat-container:active {
-            cursor: grabbing;
+        /* Pet Zone */
+        .pet-zone {
+            position: absolute;
+            top: 15%;
+            left: 20%;
+            width: 60%;
+            height: 50%;
+            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23e91e63' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'/%3E%3C/svg%3E") 16 16, auto;
+            z-index: 10;
         }
         
-        /* Petting Animation */
-        .is-petting {
-            animation: petBounce 0.6s ease-in-out infinite;
-        }
-        
-        @keyframes petBounce {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            25% { transform: scale(1.05) rotate(-2deg); }
-            75% { transform: scale(1.05) rotate(2deg); }
-        }
-        
+        /* Heart Particles */
         .heart-particle {
             position: absolute;
             color: #e91e63;
@@ -187,6 +192,93 @@
             0% { transform: translateY(0) scale(0); opacity: 1; }
             50% { transform: translateY(-60px) scale(1.2); opacity: 1; }
             100% { transform: translateY(-120px) scale(0.8); opacity: 0; }
+        }
+        
+        /* Shock Wave for Scolding */
+        .shock-wave {
+            position: absolute;
+            border: 3px solid #ef4444;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            pointer-events: none;
+            animation: shockExpand 0.6s ease-out forwards;
+        }
+        
+        @keyframes shockExpand {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+        
+        /* Cat Animations */
+        .is-petting {
+            animation: petBounce 0.6s ease-in-out infinite;
+        }
+        
+        @keyframes petBounce {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.05) rotate(-2deg); }
+            75% { transform: scale(1.05) rotate(2deg); }
+        }
+        
+        .is-angry {
+            animation: shake 0.5s infinite;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px) rotate(-5deg); }
+            75% { transform: translateX(10px) rotate(5deg); }
+        }
+        
+        .is-sad {
+            transform: translateY(20px) rotate(-5deg);
+            opacity: 0.8;
+        }
+        
+        .is-happy {
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        /* Action Animations */
+        .is-dancing {
+            animation: dance 0.5s infinite;
+        }
+        
+        .is-sleeping {
+            opacity: 0.6;
+            filter: brightness(0.7);
+        }
+        
+        .is-eating {
+            animation: eat 1s infinite;
+        }
+        
+        .is-partying {
+            animation: party 0.3s infinite;
+        }
+        
+        @keyframes dance {
+            0%, 100% { transform: rotate(-10deg) translateY(0); }
+            50% { transform: rotate(10deg) translateY(-20px); }
+        }
+        
+        @keyframes eat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1) translateY(10px); }
+        }
+        
+        @keyframes party {
+            0% { transform: translate(0,0) rotate(0deg); }
+            25% { transform: translate(10px,-10px) rotate(5deg); }
+            50% { transform: translate(-10px,10px) rotate(-5deg); }
+            75% { transform: translate(10px,10px) rotate(5deg); }
+            100% { transform: translate(0,0) rotate(0deg); }
         }
         
         /* Environment Backgrounds */
@@ -218,44 +310,31 @@
             50% { transform: scale(1.02); }
         }
         
-        /* Cat States */
-        .is-dancing { animation: dance 0.5s infinite; }
-        .is-sleeping { opacity: 0.6; filter: brightness(0.7); }
-        .is-eating { animation: eat 1s infinite; }
-        .is-partying { animation: party 0.3s infinite; }
-        
-        @keyframes dance {
-            0%, 100% { transform: rotate(-10deg) translateY(0); }
-            50% { transform: rotate(10deg) translateY(-20px); }
-        }
-        
-        @keyframes eat {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1) translateY(10px); }
-        }
-        
-        @keyframes party {
-            0% { transform: translate(0,0) rotate(0deg); }
-            25% { transform: translate(10px,-10px) rotate(5deg); }
-            50% { transform: translate(-10px,10px) rotate(-5deg); }
-            75% { transform: translate(10px,10px) rotate(5deg); }
-            100% { transform: translate(0,0) rotate(0deg); }
-        }
-        
         /* SVG Styles */
+        #head-group {
+            transform-origin: center;
+            transition: transform 0.3s;
+        }
+        
+        .is-talking #head-group {
+            animation: wobble 0.5s infinite alternate;
+        }
+        
+        @keyframes wobble {
+            from { transform: rotate(-4deg); }
+            to { transform: rotate(4deg); }
+        }
+        
         .ear {
             transform-origin: bottom center;
             transition: transform 0.3s;
         }
         
-        .ear.left { transform-origin: 55px 45px; }
-        .ear.right { transform-origin: 145px 45px; }
-        
-        .is-happy .ear.left { animation: earWiggleLeft 2s infinite; }
-        .is-happy .ear.right { animation: earWiggleRight 2s infinite; }
-        .is-sad .ear { transform: rotate(20deg) translateY(10px); }
-        .is-angry .ear.left { transform: rotate(-30deg); }
-        .is-angry .ear.right { transform: rotate(30deg); }
+        .is-happy .ear:nth-child(1) { animation: earWiggleLeft 2s infinite; }
+        .is-happy .ear:nth-child(2) { animation: earWiggleRight 2s infinite; }
+        .is-sad .ear { transform: rotate(20deg) translateY(10deg); }
+        .is-angry .ear:nth-child(1) { transform: rotate(-30deg); }
+        .is-angry .ear:nth-child(2) { transform: rotate(30deg); }
         
         @keyframes earWiggleLeft {
             0%, 100% { transform: rotate(0deg); }
@@ -267,40 +346,24 @@
             50% { transform: rotate(15deg); }
         }
         
-        #head-group {
-            transform-origin: center 140px;
-            transition: transform 0.3s;
-        }
-        
-        .is-talking #head-group {
-            animation: headBob 0.6s infinite alternate;
-        }
-        
-        @keyframes headBob {
-            from { transform: rotate(-3deg) translateY(0); }
-            to { transform: rotate(3deg) translateY(-3px); }
-        }
-        
         .eye-lid {
             transform-origin: center;
-            transition: all 0.1s;
+            transition: transform 0.1s;
         }
         
         .blink .eye-lid { transform: scaleY(0.1); }
+        .is-sad .eye-lid { transform: scaleY(0.6) rotate(10deg); }
+        .is-angry .eye-lid { transform: scaleY(0.8) rotate(-5deg); }
         .is-sleeping .eye-lid { transform: scaleY(1); }
         
         #mouth-path {
             transition: all 0.3s;
-            fill: none;
-            stroke: #1e293b;
-            stroke-width: 3;
-            stroke-linecap: round;
         }
         
-        .is-happy #mouth-path { d: path("M85 138 Q100 155 115 138"); }
-        .is-sad #mouth-path { d: path("M85 145 Q100 130 115 145"); }
-        .is-angry #mouth-path { d: path("M90 140 L100 135 L110 140"); }
-        .is-eating #mouth-path { d: path("M90 140 Q100 150 110 140"); animation: chew 0.5s infinite; }
+        .is-happy #mouth-path { rx: 12; ry: 8; }
+        .is-sad #mouth-path { rx: 12; ry: 3; transform: translateY(5px); }
+        .is-angry #mouth-path { rx: 8; ry: 3; }
+        .is-eating #mouth-path { animation: chew 0.5s infinite; }
         
         @keyframes chew {
             0%, 100% { transform: scale(1); }
@@ -342,42 +405,15 @@
         .action-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
         .action-btn:active { transform: scale(0.95); }
         
-        /* Settings Panel */
-        #settings-panel {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px);
-            z-index: 2000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .settings-content {
-            width: 100%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-            border-radius: 24px;
-            padding: 28px;
-        }
-        
-        .setting-item { margin-bottom: 20px; }
-        .setting-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #764ba2; margin-bottom: 8px; display: block; }
-        .setting-input { width: 100%; padding: 12px 16px; border: 2px solid rgba(118, 75, 162, 0.2); border-radius: 12px; font-size: 14px; outline: none; transition: all 0.3s; }
-        .setting-input:focus { border-color: #764ba2; box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.1); }
-        
         /* Mic Button */
         .mic-btn {
-            width: 56px;
-            height: 56px;
+            width: 64px;
+            height: 64px;
             border-radius: 50%;
             border: none;
             background: white;
             color: #764ba2;
-            font-size: 20px;
+            font-size: 24px;
             cursor: pointer;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
             transition: all 0.3s;
@@ -388,80 +424,91 @@
         
         .mic-btn:hover { transform: scale(1.1); }
         .mic-btn:active { transform: scale(0.9); }
-        .mic-btn.listening { animation: pulse 1.5s infinite; color: #ff4757; }
+        .mic-btn.listening { animation: pulse 1.5s infinite; color: #ef4444; }
         
         @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7); }
-            50% { box-shadow: 0 0 0 20px rgba(255, 71, 87, 0); }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            50% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
         }
         
-        /* Language Toggle */
-        .lang-toggle {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-        }
-        
+        /* Utility */
         .hidden { display: none !important; }
         
-        .close-btn {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: none;
-            background: rgba(0,0,0,0.1);
-            color: #666;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-        
-        .close-btn:hover { background: rgba(0,0,0,0.2); }
-        
-        /* Pet Zone Overlay */
-        .pet-zone {
-            position: absolute;
-            top: 20%;
-            left: 15%;
-            width: 70%;
-            height: 50%;
-            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23e91e63' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'/%3E%3C/svg%3E") 16 16, auto;
-            z-index: 10;
-        }
-        
         @media (max-width: 768px) {
-            .pc-mode .caption-box { width: 90%; right: 5%; top: 80px; }
-            .action-menu { padding: 10px; gap: 8px; bottom: 10px; }
-            .action-btn { padding: 10px 14px; font-size: 12px; }
             .device-switch { top: 10px; right: 10px; }
             .device-btn { padding: 8px 14px; font-size: 12px; }
-            .mobile-mode .caption-box { bottom: 120px; }
+            .pc-mode .caption-box { width: 90%; right: 5%; top: 80px; }
+            .action-menu { bottom: 10px; padding: 10px; }
+            .action-btn { padding: 10px 14px; font-size: 12px; }
         }
     </style>
 </head>
 <body class="pc-mode">
 
+    <!-- Overlay -->
+    <div id="overlay" onclick="toggleSidebar()"></div>
+
     <!-- Device Switch -->
     <div class="device-switch glass">
-        <button class="device-btn active" onclick="switchDevice('pc')"><i class="fas fa-desktop"></i> PC</button>
-        <button class="device-btn" onclick="switchDevice('mobile')"><i class="fas fa-mobile-alt"></i> Mobile</button>
-    </div>
-
-    <!-- Language Toggle (Mobile Only) -->
-    <div class="lang-toggle glass hidden" id="mobile-lang-toggle" style="border-radius: 15px; padding: 8px;">
-        <button onclick="toggleMobileLang()" class="w-full px-4 py-2 bg-white/20 rounded-lg text-white font-bold text-sm">
-            <span id="current-lang">BN</span> <i class="fas fa-exchange-alt ml-2"></i>
+        <button class="device-btn active" onclick="switchDevice('pc')">
+            <i class="fas fa-desktop"></i> PC
+        </button>
+        <button class="device-btn" onclick="switchDevice('mobile')">
+            <i class="fas fa-mobile-alt"></i> Mobile
         </button>
     </div>
 
+    <!-- Settings Sidebar -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-80 glass-panel shadow-2xl transform -translate-x-full overflow-y-auto">
+        <div class="p-6 h-full flex flex-col">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-black text-indigo-600 italic">SETTINGS</h2>
+                <button onclick="toggleSidebar()" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-6 flex-1">
+                <div class="setting-item">
+                    <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">OpenRouter API Key</label>
+                    <input type="password" id="api-key" placeholder="sk-or-..." class="w-full mt-2 p-4 bg-gray-100 rounded-xl border-none text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                
+                <div class="setting-item">
+                    <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Model ID</label>
+                    <input type="text" id="model-profile" value="google/gemini-2.0-flash-exp:free" class="w-full mt-2 p-4 bg-gray-100 rounded-xl border-none text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                
+                <div class="setting-item">
+                    <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">UI Theme</label>
+                    <div class="flex gap-3 mt-2">
+                        <button onclick="setTheme('purple')" class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg hover:scale-110 transition-transform"></button>
+                        <button onclick="setTheme('blue')" class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-cyan-600 shadow-lg hover:scale-110 transition-transform"></button>
+                        <button onclick="setTheme('pink')" class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-rose-600 shadow-lg hover:scale-110 transition-transform"></button>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Cat Size</label>
+                    <input type="range" id="cat-size" min="200" max="500" value="350" class="w-full mt-2 accent-indigo-600" oninput="updateCatSize(this.value)">
+                </div>
+                
+                <div class="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+                    <p class="text-[10px] text-indigo-700 font-bold uppercase mb-2">Interactions:</p>
+                    <p class="text-[11px] text-indigo-600 italic">• Hover/Touch cat head = Pet (makes happy)</p>
+                    <p class="text-[11px] text-indigo-600 italic">• Long press cat = Scold (makes sad)</p>
+                    <p class="text-[11px] text-indigo-600 italic">• Voice: "dance", "sleep", "eat", "party"</p>
+                </div>
+            </div>
+            
+            <button onclick="saveSettings()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-indigo-700 transition-colors mt-6">
+                Save Config
+            </button>
+        </div>
+    </aside>
+
     <!-- Main Content -->
-    <div class="w-full h-full flex flex-col items-center justify-center relative">
+    <main class="flex flex-col h-full relative">
         
         <!-- Caption Box -->
         <div id="caption-box" class="caption-box glass-panel rounded-3xl p-5 shadow-2xl">
@@ -470,183 +517,141 @@
                     <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                     <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Live Caption</span>
                 </div>
-                <button onclick="toggleSettings()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors">
-                    <i class="fas fa-cog text-xs"></i>
-                </button>
+                <div class="flex gap-2">
+                    <button onclick="toggleSidebar()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors">
+                        <i class="fas fa-cog text-xs"></i>
+                    </button>
+                </div>
             </div>
             
             <div class="space-y-3">
                 <!-- English Text -->
                 <div>
-                    <p class="text-[10px] font-bold text-indigo-400 uppercase mb-1">English</p>
-                    <p id="caption-text" class="text-gray-800 font-semibold text-lg leading-snug">Hello! I'm your AI Cat. How can I help you today?</p>
+                    <p class="text-[10px] font-bold text-indigo-400 uppercase mb-1">Voice (English)</p>
+                    <p id="user-transcript" class="text-gray-800 font-semibold text-base min-h-[1.5rem]"></p>
+                    <p id="ai-caption" class="text-indigo-600 font-bold text-lg mt-1">Hello! I'm your AI Cat.</p>
                 </div>
                 
-                <!-- Bengali Translation -->
+                <!-- Bengali Translation (Mobile Only) -->
                 <div id="translation-box" class="hidden pt-3 border-t border-gray-200">
                     <p class="text-[10px] font-bold text-pink-400 uppercase mb-1">বাংলা অনুবাদ</p>
                     <p id="translation-text" class="text-gray-600 text-base" style="font-family: 'Noto Sans Bengali', sans-serif;">
-                        হ্যালো! আমি তোমার এআই বিড়াল। আজ আমি কিভাবে সাহায্য করতে পারি?
+                        হ্যালো! আমি তোমার এআই বিড়াল।
                     </p>
                 </div>
             </div>
             
-            <!-- Text Input Area -->
+            <!-- Text Input -->
             <div class="input-area">
-                <input type="text" id="text-input" class="text-input" placeholder="Type your message..." onkeypress="if(event.key==='Enter')sendText()">
+                <input type="text" id="text-input" placeholder="Type your message..." class="text-input" onkeypress="if(event.key==='Enter') sendText()">
                 <button onclick="sendText()" class="send-btn">
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
             
-            <!-- Status Bar -->
+            <!-- Status -->
             <div class="mt-4 flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <span id="emotion-badge" class="px-3 py-1 rounded-full bg-purple-100 text-purple-600 text-xs font-bold">Happy</span>
-                    <div class="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div id="mood-bar" class="h-full bg-gradient-to-r from-purple-500 to-pink-500 w-3/4 transition-all duration-500"></div>
-                    </div>
+                    <span id="lang-tag" class="text-[9px] font-bold px-2 py-1 bg-indigo-100 text-indigo-600 rounded-full uppercase">EN-US</span>
+                    <span id="emotion-badge" class="text-[9px] font-bold px-2 py-1 bg-pink-100 text-pink-600 rounded-full">Happy</span>
                 </div>
-                <button onclick="toggleVoice()" id="mic-btn" class="mic-btn">
-                    <i class="fas fa-microphone" id="mic-icon"></i>
+                <button onclick="toggleMic()" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600">
+                    <i id="mic-icon" class="fas fa-microphone text-sm"></i>
                 </button>
             </div>
         </div>
 
-        <!-- Cat Container -->
-        <div id="cat-container" class="w-80 h-80 lg:w-96 lg:h-96 mt-8 relative">
-            <!-- Pet Zone -->
-            <div class="pet-zone" id="pet-zone"></div>
-            
-            <svg viewBox="0 0 200 220" class="w-full h-full">
-                <ellipse cx="100" cy="200" rx="60" ry="15" fill="rgba(0,0,0,0.2)" />
-                <path id="tail" d="M140 180 Q170 160 160 130 Q150 100 140 120" fill="none" stroke="#4f46e5" stroke-width="10" stroke-linecap="round" style="transition: all 0.5s;"/>
-                <path d="M50 190 Q100 170 150 190 L160 210 L40 210 Z" fill="#6366f1" />
-                <ellipse cx="100" cy="190" rx="55" ry="20" fill="#4f46e5" opacity="0.5"/>
+        <!-- Cat Stage -->
+        <div class="flex-1 flex flex-col items-center justify-center relative">
+            <div id="cat-stage" class="w-72 h-72 sm:w-80 sm:h-80 lg:w-[450px] lg:h-[450px]">
+                <!-- Pet Zone Overlay -->
+                <div class="pet-zone" id="pet-zone"></div>
                 
-                <g id="head-group">
-                    <path class="ear left" d="M55 45 L30 10 L75 35 Z" fill="#4338ca" />
-                    <path class="ear right" d="M145 45 L170 10 L125 35 Z" fill="#4338ca" />
-                    <circle cx="100" cy="100" r="75" fill="#6366f1" />
-                    <circle cx="100" cy="110" r="58" fill="#e0e7ff" />
+                <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-2xl">
+                    <!-- Shadow -->
+                    <ellipse cx="100" cy="190" rx="70" ry="20" fill="rgba(0,0,0,0.2)" />
                     
-                    <g id="eyes">
-                        <g transform="translate(70, 100)">
-                            <ellipse cx="0" cy="0" rx="12" ry="14" fill="white"/>
-                            <circle class="eye-lid" cx="0" cy="0" r="6" fill="#1e293b"/>
-                            <circle cx="2" cy="-2" r="2" fill="white" opacity="0.6"/>
+                    <!-- Body -->
+                    <path d="M40 180 Q100 160 160 180 L170 200 L30 200 Z" fill="#4f46e5" />
+                    
+                    <g id="head-group">
+                        <!-- Ears -->
+                        <path class="ear" d="M55 45 L35 10 L75 35 Z" fill="#4338ca" />
+                        <path class="ear" d="M145 45 L165 10 L125 35 Z" fill="#4338ca" />
+                        
+                        <!-- Head -->
+                        <circle cx="100" cy="100" r="80" fill="#6366f1" />
+                        <circle cx="100" cy="110" r="62" fill="#e0e7ff" />
+                        
+                        <!-- Eyes -->
+                        <g id="eyes">
+                            <circle class="eye-lid" cx="78" cy="105" r="10" fill="#1e293b" />
+                            <circle class="eye-lid" cx="122" cy="105" r="10" fill="#1e293b" />
                         </g>
-                        <g transform="translate(130, 100)">
-                            <ellipse cx="0" cy="0" rx="12" ry="14" fill="white"/>
-                            <circle class="eye-lid" cx="0" cy="0" r="6" fill="#1e293b"/>
-                            <circle cx="2" cy="-2" r="2" fill="white" opacity="0.6"/>
+                        
+                        <!-- Nose -->
+                        <path d="M95 125 L105 125 L100 132 Z" fill="#fda4af" />
+                        
+                        <!-- Mouth -->
+                        <ellipse id="mouth-path" cx="100" cy="145" rx="12" ry="3" fill="#1e293b" />
+                        
+                        <!-- Whiskers -->
+                        <g stroke="#4338ca" stroke-width="2" opacity="0.3">
+                            <line x1="50" y1="130" x2="20" y2="125" />
+                            <line x1="50" y1="140" x2="20" y2="145" />
+                            <line x1="150" y1="130" x2="180" y2="125" />
+                            <line x1="150" y1="140" x2="180" y2="145" />
                         </g>
                     </g>
                     
-                    <path d="M95 125 L105 125 L100 132 Z" fill="#fda4af" />
-                    <path id="mouth-path" d="M85 138 Q100 150 115 138" />
-                    
-                    <g stroke="#4338ca" stroke-width="1.5" opacity="0.3" fill="none">
-                        <path d="M50 130 L20 125" />
-                        <path d="M50 140 L20 145" />
-                        <path d="M150 130 L180 125" />
-                        <path d="M150 140 L180 145" />
-                    </g>
-                </g>
-                
-                <ellipse cx="70" cy="200" rx="12" ry="8" fill="#818cf8" />
-                <ellipse cx="130" cy="200" rx="12" ry="8" fill="#818cf8" />
-            </svg>
-        </div>
+                    <!-- Paws -->
+                    <ellipse cx="60" cy="195" rx="15" ry="10" fill="#818cf8" />
+                    <ellipse cx="140" cy="195" rx="15" ry="10" fill="#818cf8" />
+                </svg>
+            </div>
 
-    </div>
+            <!-- Mic Button (Main) -->
+            <div class="absolute bottom-32 flex flex-col items-center gap-3">
+                <button id="mic-btn-main" onclick="toggleMic()" class="mic-btn">
+                    <i id="mic-icon-main" class="fas fa-microphone"></i>
+                </button>
+                <p class="text-white text-xs font-medium opacity-80">Tap to talk</p>
+            </div>
+        </div>
+    </main>
 
     <!-- Action Menu -->
     <div class="action-menu glass">
-        <button class="action-btn" onclick="performAction('dance')"><i class="fas fa-music"></i> Dance</button>
-        <button class="action-btn" onclick="performAction('sleep')"><i class="fas fa-bed"></i> Sleep</button>
-        <button class="action-btn" onclick="performAction('eat')"><i class="fas fa-fish"></i> Eat</button>
-        <button class="action-btn" onclick="performAction('party')"><i class="fas fa-glass-cheers"></i> Party</button>
-    </div>
-
-    <!-- Settings Panel -->
-    <div id="settings-panel" onclick="if(event.target===this)toggleSettings()">
-        <div class="settings-content glass-panel relative">
-            <button class="close-btn" onclick="toggleSettings()"><i class="fas fa-times"></i></button>
-            
-            <h2 class="text-2xl font-black text-gray-800 mb-6">Settings</h2>
-
-            <div class="setting-item">
-                <label class="setting-label">OpenRouter API Key</label>
-                <input type="password" id="api-key" class="setting-input" placeholder="sk-or-...">
-            </div>
-
-            <div class="setting-item">
-                <label class="setting-label">Model ID</label>
-                <input type="text" id="model-id" class="setting-input" value="google/gemini-2.0-flash-exp:free">
-            </div>
-
-            <div class="setting-item">
-                <label class="setting-label">Theme Color</label>
-                <div class="flex gap-3 mt-2">
-                    <button onclick="setTheme('purple')" class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg hover:scale-110 transition-transform"></button>
-                    <button onclick="setTheme('blue')" class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-600 shadow-lg hover:scale-110 transition-transform"></button>
-                    <button onclick="setTheme('pink')" class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-rose-600 shadow-lg hover:scale-110 transition-transform"></button>
-                    <button onclick="setTheme('green')" class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 shadow-lg hover:scale-110 transition-transform"></button>
-                </div>
-            </div>
-
-            <div class="setting-item">
-                <label class="setting-label">Cat Size</label>
-                <input type="range" id="cat-size" min="200" max="500" value="350" class="w-full accent-purple-600" oninput="updateCatSize(this.value)">
-            </div>
-
-            <button onclick="saveSettings()" class="w-full mt-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]">
-                Save Settings
-            </button>
-        </div>
+        <button class="action-btn" onclick="performAction('dance')">
+            <i class="fas fa-music"></i> Dance
+        </button>
+        <button class="action-btn" onclick="performAction('sleep')">
+            <i class="fas fa-bed"></i> Sleep
+        </button>
+        <button class="action-btn" onclick="performAction('eat')">
+            <i class="fas fa-fish"></i> Eat
+        </button>
+        <button class="action-btn" onclick="performAction('party')">
+            <i class="fas fa-glass-cheers"></i> Party
+        </button>
     </div>
 
     <script>
-        // State Management
+        // State
         const STATE = {
             device: 'pc',
+            listening: false,
+            speaking: false,
             lang: 'en-US',
             mobileLang: 'bn-BD',
             emotion: 'happy',
-            isListening: false,
-            isSpeaking: false,
-            currentAction: null,
             config: {
-                apiKey: localStorage.getItem('cat_api_key') || '',
-                model: localStorage.getItem('cat_model') || 'google/gemini-2.0-flash-exp:free',
-                theme: localStorage.getItem('cat_theme') || 'purple',
-                catSize: localStorage.getItem('cat_size') || '350'
+                key: localStorage.getItem('cat_key') || '',
+                model: localStorage.getItem('cat_model') || 'google/gemini-2.0-flash-exp:free'
             }
         };
 
-        // Initialize
-        window.onload = () => {
-            document.getElementById('api-key').value = STATE.config.apiKey;
-            document.getElementById('model-id').value = STATE.config.model;
-            document.getElementById('cat-size').value = STATE.config.catSize;
-            updateCatSize(STATE.config.catSize);
-            applyTheme(STATE.config.theme);
-            
-            // Setup drag
-            setupDrag();
-            
-            // Setup petting
-            setupPetting();
-            
-            // Start blink
-            setInterval(blink, 4000);
-            
-            // Setup continuous listening restart
-            setupContinuousListening();
-        };
-
-        // Device Switching
+        // Device Switch
         function switchDevice(device) {
             STATE.device = device;
             document.body.className = device + '-mode';
@@ -656,140 +661,131 @@
                 if(btn.textContent.toLowerCase().includes(device)) btn.classList.add('active');
             });
             
-            const mobileOnly = document.querySelectorAll('.mobile-only');
             const translationBox = document.getElementById('translation-box');
-            const langToggle = document.getElementById('mobile-lang-toggle');
+            const langTag = document.getElementById('lang-tag');
             
             if(device === 'mobile') {
-                mobileOnly.forEach(el => el.classList.remove('hidden'));
-                langToggle.classList.remove('hidden');
                 translationBox.classList.remove('hidden');
-                STATE.lang = STATE.mobileLang;
+                langTag.textContent = 'BN-EN';
+                setupDrag();
             } else {
-                mobileOnly.forEach(el => el.classList.add('hidden'));
-                langToggle.classList.add('hidden');
                 translationBox.classList.add('hidden');
-                STATE.lang = 'en-US';
+                langTag.textContent = 'EN-US';
+                // Reset position for PC
+                const box = document.getElementById('caption-box');
+                box.style.transform = '';
+                box.style.left = '';
+                box.style.top = '';
             }
             
             document.body.classList.remove('env-party', 'env-sleep', 'env-eat', 'env-dance');
         }
 
-        function toggleMobileLang() {
-            STATE.mobileLang = STATE.mobileLang === 'bn-BD' ? 'en-US' : 'bn-BD';
-            STATE.lang = STATE.mobileLang;
-            document.getElementById('current-lang').textContent = STATE.mobileLang === 'bn-BD' ? 'BN' : 'EN';
-        }
-
-        // Drag Functionality
+        // Drag for Mobile
         function setupDrag() {
-            const captionBox = document.getElementById('caption-box');
+            const box = document.getElementById('caption-box');
             const header = document.getElementById('caption-header');
             
             let isDragging = false;
-            let currentX, currentY, initialX, initialY;
-            let xOffset = 0, yOffset = 0;
+            let startX, startY, initialX = 0, initialY = 0;
             
-            header.addEventListener('mousedown', dragStart);
-            header.addEventListener('touchstart', dragStart, {passive: false});
-            
-            function dragStart(e) {
-                if(STATE.device === 'pc') return; // Only drag in mobile mode
-                
-                if(e.type === 'touchstart') {
-                    initialX = e.touches[0].clientX - xOffset;
-                    initialY = e.touches[0].clientY - yOffset;
-                } else {
-                    initialX = e.clientX - xOffset;
-                    initialY = e.clientY - yOffset;
-                }
-                
+            header.addEventListener('touchstart', (e) => {
                 isDragging = true;
+                startX = e.touches[0].clientX - initialX;
+                startY = e.touches[0].clientY - initialY;
                 header.style.cursor = 'grabbing';
-            }
+            }, {passive: false});
             
-            document.addEventListener('mousemove', dragMove);
-            document.addEventListener('touchmove', dragMove, {passive: false});
-            
-            function dragMove(e) {
+            document.addEventListener('touchmove', (e) => {
                 if(!isDragging) return;
                 e.preventDefault();
-                
-                if(e.type === 'touchmove') {
-                    currentX = e.touches[0].clientX - initialX;
-                    currentY = e.touches[0].clientY - initialY;
-                } else {
-                    currentX = e.clientX - initialX;
-                    currentY = e.clientY - initialY;
-                }
-                
-                xOffset = currentX;
-                yOffset = currentY;
-                
-                captionBox.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-            }
+                initialX = e.touches[0].clientX - startX;
+                initialY = e.touches[0].clientY - startY;
+                box.style.transform = `translate3d(${initialX}px, ${initialY}px, 0)`;
+            }, {passive: false});
             
-            document.addEventListener('mouseup', dragEnd);
-            document.addEventListener('touchend', dragEnd);
-            
-            function dragEnd() {
-                initialX = currentX;
-                initialY = currentY;
+            document.addEventListener('touchend', () => {
                 isDragging = false;
                 header.style.cursor = 'grab';
-            }
+            });
         }
 
-        // Petting Functionality
-        function setupPetting() {
+        // Petting & Scolding
+        function setupInteractions() {
             const petZone = document.getElementById('pet-zone');
-            const catContainer = document.getElementById('cat-container');
+            const catStage = document.getElementById('cat-stage');
             
-            let petTimeout;
+            let petInterval;
+            let longPressTimer;
             
-            // Mouse events
+            // Petting (mouse enter/move)
             petZone.addEventListener('mouseenter', startPetting);
             petZone.addEventListener('mouseleave', stopPetting);
-            petZone.addEventListener('mousemove', whilePetting);
             
-            // Touch events
+            // Touch petting
             petZone.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 startPetting();
+                
+                // Long press detection for scolding
+                longPressTimer = setTimeout(() => {
+                    stopPetting();
+                    scoldCat();
+                }, 800);
             }, {passive: false});
             
-            petZone.addEventListener('touchend', stopPetting);
-            petZone.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                whilePetting();
-            }, {passive: false});
+            petZone.addEventListener('touchend', () => {
+                clearTimeout(longPressTimer);
+                stopPetting();
+            });
+            
+            // Scolding (long press mouse)
+            catStage.addEventListener('mousedown', () => {
+                longPressTimer = setTimeout(scoldCat, 1000);
+            });
+            
+            catStage.addEventListener('mouseup', () => clearTimeout(longPressTimer));
             
             function startPetting() {
-                catContainer.classList.add('is-petting');
+                if(STATE.emotion === 'angry') return;
+                catStage.classList.add('is-petting');
                 createHeart();
+                petInterval = setInterval(createHeart, 600);
                 speak("Purr... purr...", true);
-                
-                // Create hearts continuously while petting
-                petTimeout = setInterval(() => {
-                    createHeart();
-                }, 800);
-            }
-            
-            function whilePetting() {
-                if(!catContainer.classList.contains('is-petting')) {
-                    catContainer.classList.add('is-petting');
-                }
+                updateEmotion('happy');
             }
             
             function stopPetting() {
-                catContainer.classList.remove('is-petting');
-                clearInterval(petTimeout);
+                catStage.classList.remove('is-petting');
+                clearInterval(petInterval);
+            }
+            
+            function scoldCat() {
+                catStage.classList.remove('is-petting');
+                catStage.classList.add('is-angry');
+                
+                // Shock wave effect
+                const wave = document.createElement('div');
+                wave.className = 'shock-wave';
+                const rect = catStage.getBoundingClientRect();
+                wave.style.left = (rect.left + rect.width/2 - 50) + 'px';
+                wave.style.top = (rect.top + rect.height/2 - 50) + 'px';
+                document.body.appendChild(wave);
+                setTimeout(() => wave.remove(), 600);
+                
+                speak("Meow... why?", true);
+                updateEmotion('sad');
+                
+                setTimeout(() => {
+                    catStage.classList.remove('is-angry');
+                    updateEmotion('happy');
+                }, 3000);
             }
         }
 
         function createHeart() {
-            const catContainer = document.getElementById('cat-container');
-            const rect = catContainer.getBoundingClientRect();
+            const catStage = document.getElementById('cat-stage');
+            const rect = catStage.getBoundingClientRect();
             
             const heart = document.createElement('div');
             heart.className = 'heart-particle';
@@ -801,23 +797,21 @@
             setTimeout(() => heart.remove(), 1500);
         }
 
-        // Actions
+        // Virtual Space Actions
         function performAction(action) {
-            const container = document.getElementById('cat-container');
-            container.classList.remove('is-dancing', 'is-sleeping', 'is-eating', 'is-partying', 'is-petting');
+            const catStage = document.getElementById('cat-stage');
+            catStage.classList.remove('is-dancing', 'is-sleeping', 'is-eating', 'is-partying', 'is-petting');
             document.body.classList.remove('env-party', 'env-sleep', 'env-eat', 'env-dance');
             
-            STATE.currentAction = action;
-            container.classList.add('is-' + action);
-            
             const responses = {
-                dance: { en: "Let's dance! 🎵", bn: "চলো নাচি! 🎵", env: 'env-dance' },
-                sleep: { en: "Goodnight... 😴", bn: "শুভ রাত্রি... 😴", env: 'env-sleep' },
-                eat: { en: "Yummy! 🐟", bn: "মজাদার! 🐟", env: 'env-eat' },
-                party: { en: "Party time! 🎉", bn: "পার্টি টাইম! 🎉", env: 'env-party' }
+                dance: { en: "Let's dance! 🎵", bn: "চলো নাচি! 🎵", env: 'env-dance', anim: 'is-dancing' },
+                sleep: { en: "Goodnight... 😴", bn: "শুভ রাত্রি... 😴", env: 'env-sleep', anim: 'is-sleeping' },
+                eat: { en: "Yummy! 🐟", bn: "মজাদার! 🐟", env: 'env-eat', anim: 'is-eating' },
+                party: { en: "Party time! 🎉", bn: "পার্টি টাইম! 🎉", env: 'env-party', anim: 'is-partying' }
             };
             
             const resp = responses[action];
+            catStage.classList.add(resp.anim);
             document.body.classList.add(resp.env);
             
             if(STATE.device === 'mobile') {
@@ -828,32 +822,75 @@
                 speak(resp.en);
             }
             
+            // Create particles
+            createParticles(action);
+            
             setTimeout(() => {
-                container.classList.remove('is-' + action);
+                catStage.classList.remove(resp.anim);
                 document.body.classList.remove(resp.env);
-                STATE.currentAction = null;
             }, 5000);
         }
 
+        function createParticles(type) {
+            const icons = {
+                dance: ['🎵', '🎶', '💃'],
+                sleep: ['💤', '🌙', '⭐'],
+                eat: ['🐟', '🍖', '😋'],
+                party: ['🎉', '🎊', '🎈', '✨']
+            };
+            
+            for(let i=0; i<5; i++) {
+                setTimeout(() => {
+                    const p = document.createElement('div');
+                    p.style.position = 'absolute';
+                    p.style.left = (45 + Math.random()*10) + '%';
+                    p.style.bottom = '30%';
+                    p.style.fontSize = (24 + Math.random()*16) + 'px';
+                    p.style.pointerEvents = 'none';
+                    p.style.animation = 'floatUp 2s ease-out forwards';
+                    p.textContent = icons[type][Math.floor(Math.random()*icons[type].length)];
+                    document.body.appendChild(p);
+                    setTimeout(() => p.remove(), 2000);
+                }, i*200);
+            }
+        }
+
         // AI Communication
-        async function sendToAI(text) {
-            if(!text.trim()) return;
-            if(!STATE.config.apiKey) {
-                toggleSettings();
+        async function callAI(text) {
+            // Check for action commands
+            const lowerText = text.toLowerCase();
+            if(['dance', 'sleep', 'eat', 'party'].some(a => lowerText.includes(a))) {
+                const action = ['dance', 'sleep', 'eat', 'party'].find(a => lowerText.includes(a));
+                performAction(action);
                 return;
             }
             
-            updateCaption("Thinking...", STATE.device === 'mobile' ? "ভাবছি..." : null);
+            // Language switch
+            if(lowerText.includes('bangla') || lowerText.includes('bengali')) {
+                if(STATE.device === 'mobile') {
+                    STATE.mobileLang = 'bn-BD';
+                    speak("অবশ্যই! এখন থেকে বাংলায় কথা বলব।");
+                    updateCaption("Sure! I'll speak in Bengali now.", "অবশ্যই! এখন থেকে বাংলায় কথা বলব।");
+                    return;
+                }
+            }
             
-            const prompt = STATE.device === 'mobile' 
-                ? `You are a cute AI cat. Reply in both English and Bengali. Format: ENGLISH ||| BENGALI. Keep short and cute. User: ${text}`
-                : `You are a cute AI cat. Reply in English only. Keep short and cute. User: ${text}`;
+            if(!STATE.config.key) {
+                toggleSidebar();
+                return;
+            }
+            
+            document.getElementById('ai-caption').textContent = "Thinking...";
+            
+            const prompt = STATE.device === 'mobile'
+                ? `You are a cute AI cat. Reply in English AND Bengali. Format: ENGLISH ||| BENGALI. Keep short. User: ${text}`
+                : `You are a cute AI cat. Reply in English only. Keep short. User: ${text}`;
             
             try {
                 const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: {
-                        "Authorization": `Bearer ${STATE.config.apiKey}`,
+                        "Authorization": `Bearer ${STATE.config.key}`,
                         "Content-Type": "application/json",
                         "HTTP-Referer": window.location.href,
                         "X-Title": "AI Cat"
@@ -878,189 +915,163 @@
                     speak(reply);
                 }
             } catch(e) {
-                updateCaption("Meow! Error occurred.", "মিউ! সমস্যা হয়েছে।");
+                updateCaption("Meow! Error.", "মিউ! সমস্যা।");
             }
         }
 
-        // Text Input
-        function sendText() {
-            const input = document.getElementById('text-input');
-            const text = input.value;
-            if(!text.trim()) return;
-            
-            sendToAI(text);
-            input.value = '';
-            input.blur();
-        }
-
-        // Voice Recognition - Continuous
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognition = null;
-        
-        if(SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = false;
-            recognition.lang = STATE.lang;
-            
-            recognition.onstart = () => {
-                STATE.isListening = true;
-                updateMicUI(true);
-            };
-            
-            recognition.onresult = (e) => {
-                const text = e.results[e.results.length - 1][0].transcript;
-                sendToAI(text);
-            };
-            
-            recognition.onerror = (e) => {
-                console.log('Speech error:', e.error);
-                // Auto restart on error unless it's not allowed
-                if(e.error !== 'not-allowed' && e.error !== 'service-not-allowed') {
-                    setTimeout(() => {
-                        if(STATE.isListening) recognition.start();
-                    }, 500);
-                }
-            };
-            
-            recognition.onend = () => {
-                // Auto restart if still in listening mode
-                if(STATE.isListening) {
-                    setTimeout(() => {
-                        try { recognition.start(); } catch(e) {}
-                    }, 300);
-                } else {
-                    updateMicUI(false);
-                }
-            };
-        }
-        
-        function setupContinuousListening() {
-            // This ensures voice keeps listening after each phrase
-        }
-        
-        function toggleVoice() {
-            if(!recognition) {
-                alert("Voice recognition not supported in this browser");
-                return;
-            }
-            
-            STATE.isListening = !STATE.isListening;
-            
-            if(STATE.isListening) {
-                recognition.lang = STATE.lang;
-                try { recognition.start(); } catch(e) {}
-            } else {
-                recognition.stop();
-                updateMicUI(false);
-            }
-        }
-        
-        function updateMicUI(isListening) {
-            const btn = document.getElementById('mic-btn');
-            const icon = document.getElementById('mic-icon');
-            
-            if(isListening) {
-                btn.classList.add('listening');
-                icon.className = 'fas fa-microphone-slash';
-            } else {
-                btn.classList.remove('listening');
-                icon.className = 'fas fa-microphone';
-            }
-        }
-
-        // Speech Synthesis
-        function speak(text, forceEnglish = false) {
-            if(!text) return;
-            window.speechSynthesis.cancel();
-            
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = forceEnglish ? 'en-US' : STATE.lang;
-            utterance.rate = 1.1;
-            utterance.pitch = 1.2;
-            
-            utterance.onstart = () => {
-                document.getElementById('cat-container').classList.add('is-talking');
-            };
-            
-            utterance.onend = () => {
-                document.getElementById('cat-container').classList.remove('is-talking');
-            };
-            
-            window.speechSynthesis.speak(utterance);
-        }
-
-        // UI Updates
-        function updateCaption(enText, bnText = null) {
-            document.getElementById('caption-text').textContent = enText;
-            if(bnText) {
-                document.getElementById('translation-text').textContent = bnText;
-            }
+        function updateCaption(en, bn = null) {
+            document.getElementById('ai-caption').textContent = en;
+            if(bn) document.getElementById('translation-text').textContent = bn;
         }
 
         function updateEmotion(emotion) {
             STATE.emotion = emotion;
             const badge = document.getElementById('emotion-badge');
             const emotions = {
-                happy: { text: 'Happy', class: 'bg-purple-100 text-purple-600' },
+                happy: { text: 'Happy', class: 'bg-pink-100 text-pink-600' },
                 sad: { text: 'Sad', class: 'bg-blue-100 text-blue-600' },
-                angry: { text: 'Angry', class: 'bg-red-100 text-red-600' },
-                love: { text: 'Loved', class: 'bg-pink-100 text-pink-600' }
+                angry: { text: 'Angry', class: 'bg-red-100 text-red-600' }
             };
+            badge.textContent = emotions[emotion].text;
+            badge.className = `text-[9px] font-bold px-2 py-1 rounded-full ${emotions[emotion].class}`;
             
-            const emo = emotions[emotion] || emotions.happy;
-            badge.textContent = emo.text;
-            badge.className = `px-3 py-1 rounded-full text-xs font-bold ${emo.class}`;
+            // Apply to cat
+            const catStage = document.getElementById('cat-stage');
+            catStage.classList.remove('is-happy', 'is-sad', 'is-angry');
+            if(emotion !== 'happy') catStage.classList.add(`is-${emotion}`);
         }
 
-        // Settings
-        function toggleSettings() {
-            const panel = document.getElementById('settings-panel');
-            panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+        // Voice
+        const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const rec = Rec ? new Rec() : null;
+        
+        if(rec) {
+            rec.continuous = true;
+            rec.interimResults = false;
+            rec.lang = STATE.lang;
+            
+            rec.onstart = () => {
+                STATE.listening = true;
+                updateMicUI(true);
+            };
+            
+            rec.onresult = (e) => {
+                const text = e.results[e.results.length-1][0].transcript;
+                document.getElementById('user-transcript').textContent = text;
+                callAI(text);
+            };
+            
+            rec.onend = () => {
+                if(STATE.listening) setTimeout(() => rec.start(), 300);
+            };
+        }
+
+        function toggleMic() {
+            if(!rec) return alert("Voice not supported");
+            STATE.listening = !STATE.listening;
+            
+            if(STATE.listening) {
+                rec.lang = STATE.device === 'mobile' ? STATE.mobileLang : 'en-US';
+                rec.start();
+            } else {
+                rec.stop();
+                updateMicUI(false);
+            }
+        }
+
+        function updateMicUI(isListening) {
+            const icons = ['mic-icon', 'mic-icon-main'];
+            icons.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.className = isListening ? 'fas fa-microphone-slash' : 'fas fa-microphone';
+                }
+            });
+            
+            const btn = document.getElementById('mic-btn-main');
+            if(isListening) btn.classList.add('listening');
+            else btn.classList.remove('listening');
+        }
+
+        function speak(text, forceEnglish = false) {
+            STATE.speaking = true;
+            window.speechSynthesis.cancel();
+            
+            const utt = new SpeechSynthesisUtterance(text);
+            utt.lang = forceEnglish ? 'en-US' : (STATE.device === 'mobile' ? STATE.mobileLang : 'en-US');
+            utt.rate = 1.1;
+            utt.pitch = 1.2;
+            
+            document.body.classList.add('is-talking');
+            
+            utt.onend = () => {
+                STATE.speaking = false;
+                document.body.classList.remove('is-talking');
+            };
+            
+            window.speechSynthesis.speak(utt);
+        }
+
+        function sendText() {
+            const input = document.getElementById('text-input');
+            const text = input.value;
+            if(!text.trim()) return;
+            document.getElementById('user-transcript').textContent = text;
+            callAI(text);
+            input.value = '';
+        }
+
+        // UI
+        function toggleSidebar() {
+            const el = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const isOpen = el.style.transform === 'translateX(0px)';
+            
+            el.style.transform = isOpen ? 'translateX(-100%)' : 'translateX(0px)';
+            overlay.style.display = isOpen ? 'none' : 'block';
         }
 
         function saveSettings() {
-            STATE.config.apiKey = document.getElementById('api-key').value;
-            STATE.config.model = document.getElementById('model-id').value;
+            STATE.config.key = document.getElementById('api-key').value;
+            STATE.config.model = document.getElementById('model-profile').value;
             
-            localStorage.setItem('cat_api_key', STATE.config.apiKey);
+            localStorage.setItem('cat_key', STATE.config.key);
             localStorage.setItem('cat_model', STATE.config.model);
-            localStorage.setItem('cat_theme', STATE.config.theme);
-            localStorage.setItem('cat_size', STATE.config.catSize);
             
-            toggleSettings();
+            toggleSidebar();
             updateCaption("Settings saved!", "সেটিংস সংরক্ষিত!");
         }
 
         function setTheme(color) {
-            STATE.config.theme = color;
-            applyTheme(color);
-        }
-
-        function applyTheme(color) {
             const themes = {
                 purple: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 blue: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                pink: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-                green: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+                pink: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
             };
             document.body.style.background = themes[color];
+            localStorage.setItem('cat_theme', color);
         }
 
         function updateCatSize(size) {
-            const container = document.getElementById('cat-container');
-            container.style.width = size + 'px';
-            container.style.height = size + 'px';
-            STATE.config.catSize = size;
+            const catStage = document.getElementById('cat-stage');
+            catStage.style.width = size + 'px';
+            catStage.style.height = size + 'px';
         }
 
-        // Utilities
-        function blink() {
-            if(STATE.currentAction === 'sleep') return;
-            const eyes = document.getElementById('eyes');
-            eyes.classList.add('blink');
-            setTimeout(() => eyes.classList.remove('blink'), 150);
-        }
+        // Init
+        window.onload = () => {
+            document.getElementById('api-key').value = STATE.config.key;
+            document.getElementById('model-profile').value = STATE.config.model;
+            
+            setupInteractions();
+            
+            // Blink
+            setInterval(() => {
+                const eyes = document.getElementById('eyes');
+                eyes.classList.add('blink');
+                setTimeout(() => eyes.classList.remove('blink'), 150);
+            }, 4000);
+        };
     </script>
 </body>
 </html>
