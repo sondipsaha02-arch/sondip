@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Cat | Touch Emotion Pro</title>
+    <title>AI Cat | Mobile Touch Fixed</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -15,33 +15,36 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { font-family: 'Inter', sans-serif; overflow: hidden; height: 100dvh; background: #f8fafc; touch-action: manipulation; }
+        body { font-family: 'Inter', sans-serif; overflow: hidden; height: 100dvh; background: #f1f5f9; touch-action: none; }
         
         #sidebar { transition: transform 0.3s ease; z-index: 1000; }
         #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 900; }
 
-        /* --- TOUCH ANIMATIONS --- */
-        #cat-stage { transform-origin: bottom center; animation: idle 4s infinite ease-in-out; }
+        /* --- PHYSICS ENGINE --- */
+        #cat-stage { transform-origin: bottom center; pointer-events: auto; cursor: pointer; }
         
-        /* Purring effect */
-        .is-purring { animation: purr 0.1s infinite !important; }
-        @keyframes purr { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } }
+        /* Purring (Vibration) */
+        .is-purring { animation: purr-shake 0.1s infinite; }
+        @keyframes purr-shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } }
 
         /* Ear Reactions */
-        .ears-down #ear-l { transform: rotate(-30deg) translateY(5px); }
-        .ears-down #ear-r { transform: rotate(30deg) translateY(5px); }
+        #ear-l, #ear-r { transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: center bottom; }
+        .ears-down #ear-l { transform: rotate(-35deg) translate(-5px, 5px); }
+        .ears-down #ear-r { transform: rotate(35deg) translate(5px, 5px); }
 
-        #head-group { transform-origin: 100px 145px; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
-        .is-talking #head-group { animation: talk 1.2s infinite ease-in-out; }
+        /* Head Tilt */
+        #head-group { transform-origin: 100px 145px; transition: transform 0.3s ease; }
+        .is-talking #head-group { animation: talk-tilt 1.5s infinite ease-in-out; }
         
-        @keyframes idle { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02) translateY(-5px); } }
-        @keyframes talk { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+        @keyframes talk-tilt { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
 
-        /* Draggable Box */
-        #speech-bubble { position: absolute; z-index: 100; touch-action: none; width: 85vw; max-width: 300px; }
+        /* Eye Logic */
         .eye-lid { transform-origin: center; transition: transform 0.1s; }
         .blink .eye-lid { transform: scaleY(0.1); }
-        .happy-eyes .eye-lid { transform: scaleY(0.4) translateY(4px); }
+        .happy-eyes .eye-lid { transform: scaleY(0.3) translateY(4px); }
+
+        /* Speech Bubble */
+        #speech-bubble { position: absolute; z-index: 50; width: 85vw; max-width: 320px; }
     </style>
 </head>
 <body class="dark:bg-dark transition-colors duration-500">
@@ -52,41 +55,40 @@
         
         <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-900 shadow-2xl transform -translate-x-full">
             <div class="p-6 h-full flex flex-col">
-                <div class="flex justify-between items-center mb-8">
-                    <span class="font-black text-primary text-xl tracking-tighter italic">CAT EMOTION</span>
-                    <button onclick="toggleSidebar()" class="p-2 text-gray-400"><i class="fas fa-times"></i></button>
+                <div class="flex justify-between items-center mb-6">
+                    <span class="font-black text-primary italic">CAT SETTINGS</span>
+                    <button onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="space-y-4 flex-1">
-                    <input type="password" id="api-key" placeholder="API Key" class="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-sm">
-                    <input type="text" id="model-profile" placeholder="Model ID" class="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-sm">
-                    <select id="voice-select" class="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-xs"></select>
+                    <input type="password" id="api-key" placeholder="API Key" class="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none">
+                    <input type="text" id="model-profile" placeholder="Model ID" class="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none">
                 </div>
-                <button onclick="saveSettings()" class="w-full bg-primary text-white py-4 rounded-2xl font-bold">Save Settings</button>
+                <button onclick="saveSettings()" class="w-full bg-primary text-white py-4 rounded-xl font-bold">Apply</button>
             </div>
         </aside>
 
         <main class="flex-1 flex flex-col relative">
-            <header class="h-16 flex items-center justify-between px-6 z-50">
-                <button onclick="toggleSidebar()" class="p-2 bg-white dark:bg-gray-800 shadow rounded-lg text-primary"><i class="fas fa-paw"></i></button>
-                <div id="mood-text" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Mood: Neutral</div>
+            <header class="p-6 flex justify-between items-center z-50">
+                <button onclick="toggleSidebar()" class="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl shadow-md"><i class="fas fa-cog text-primary"></i></button>
+                <div id="mood-label" class="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-white/50 px-3 py-1 rounded-full">Mood: Normal</div>
             </header>
 
             <div class="flex-1 flex flex-col items-center justify-center relative">
                 
                 <div id="speech-bubble" style="left: 20px; top: 100px;">
-                    <div class="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl p-5 rounded-[2.5rem] shadow-2xl border border-white/20">
+                    <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md p-5 rounded-[2.5rem] shadow-xl border border-white/20">
                         <div id="drag-handle" class="w-12 h-1 bg-gray-200 mx-auto mb-3 rounded-full cursor-move"></div>
                         <p id="user-transcript" class="text-primary font-bold text-lg mb-1"></p>
                         <p id="ai-caption" class="text-gray-500 text-sm italic"></p>
                     </div>
                 </div>
 
-                <div id="cat-stage">
+                <div id="cat-stage" onpointerdown="handleCatInteraction(event)">
                     <svg viewBox="0 0 200 200" class="w-72 h-72 sm:w-80 sm:h-80 lg:w-[480px] lg:h-[480px]">
                         <path d="M40 190 Q100 160 160 190 L170 200 L30 200 Z" fill="#4f46e5" />
-                        <g id="head-group" onclick="handleTouch('head')" ontouchstart="handleTouch('head')">
-                            <path id="ear-l" d="M55 45 L35 10 L75 35 Z" fill="#4338ca" onclick="handleTouch('ear')" />
-                            <path id="ear-r" d="M145 45 L165 10 L125 35 Z" fill="#4338ca" onclick="handleTouch('ear')" />
+                        <g id="head-group">
+                            <path id="ear-l" d="M55 45 L35 10 L75 35 Z" fill="#4338ca" />
+                            <path id="ear-r" d="M145 45 L165 10 L125 35 Z" fill="#4338ca" />
                             <circle id="head-base" cx="100" cy="100" r="80" fill="#6366f1" />
                             <circle cx="100" cy="110" r="62" fill="#e0e7ff" />
                             <g id="eyes">
@@ -99,47 +101,49 @@
                 </div>
 
                 <div class="absolute bottom-10 flex flex-col items-center gap-4">
-                    <button id="mic-btn" onclick="handleMicToggle()" class="w-20 h-20 rounded-full bg-white dark:bg-gray-800 shadow-2xl flex items-center justify-center text-2xl active:scale-90 transition-all">
+                    <button id="mic-btn" onclick="handleMicToggle()" class="w-16 h-16 rounded-full bg-white dark:bg-gray-800 shadow-2xl flex items-center justify-center">
                         <i id="mic-icon" class="fas fa-microphone text-gray-300"></i>
                     </button>
-                    <div id="status" class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Ready</div>
+                    <div id="status" class="text-[9px] font-bold text-gray-400 uppercase">Ready</div>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
-        const STATE = { isActive: false, isTalking: false, config: { key: localStorage.getItem('cat_key') || '', model: localStorage.getItem('cat_model') || 'google/gemini-flash-1.5-8b' } };
+        const STATE = { isActive: false, config: { key: localStorage.getItem('cat_key') || '', model: localStorage.getItem('cat_model') || 'google/gemini-flash-1.5-8b' } };
 
-        // --- TOUCH EMOTION LOGIC ---
-        function handleTouch(part) {
+        // --- UPDATED INTERACTION FOR MOBILE ---
+        function handleCatInteraction(e) {
+            e.preventDefault();
+            const targetId = e.target.id;
             const cat = document.getElementById('cat-stage');
             const eyes = document.getElementById('eyes');
-            const moodText = document.getElementById('mood-text');
+            const mood = document.getElementById('mood-label');
 
-            // Haptic Feedback (Vibration)
-            if (navigator.vibrate) navigator.vibrate(50);
+            if (navigator.vibrate) navigator.vibrate(40); // Instant Haptic
 
-            if (part === 'head') {
+            if (targetId === 'ear-l' || targetId === 'ear-r') {
+                // Ear Interaction
+                cat.classList.add('ears-down');
+                mood.innerText = "Mood: Annoyed 💢";
+                setTimeout(() => {
+                    cat.classList.remove('ears-down');
+                    mood.innerText = "Mood: Normal";
+                }, 1000);
+            } else {
+                // Head/Face Interaction
                 cat.classList.add('is-purring');
                 eyes.classList.add('happy-eyes');
-                moodText.innerText = "Mood: Purring ❤️";
+                mood.innerText = "Mood: Purring ❤️";
                 setTimeout(() => {
                     cat.classList.remove('is-purring');
                     eyes.classList.remove('happy-eyes');
-                    moodText.innerText = "Mood: Happy";
+                    mood.innerText = "Mood: Normal";
                 }, 2000);
-            } else if (part === 'ear') {
-                cat.classList.add('ears-down');
-                moodText.innerText = "Mood: Annoyed 💢";
-                setTimeout(() => {
-                    cat.classList.remove('ears-down');
-                    moodText.innerText = "Mood: Neutral";
-                }, 1500);
             }
         }
 
-        // Menu Toggle
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('overlay');
@@ -148,29 +152,30 @@
             overlay.style.display = isOpen ? 'none' : 'block';
         }
 
-        // Draggable Logic
+        // Draggable Logic (Multi-Touch Fixed)
         function setupDraggable(el) {
             let posX = 0, posY = 0, initialX, initialY;
             const dragStart = (e) => {
-                const event = e.type === "touchstart" ? e.touches[0] : e;
+                const event = e.type.includes("touch") ? e.touches[0] : e;
                 initialX = event.clientX - posX; initialY = event.clientY - posY;
                 if (e.target.id === 'drag-handle' || e.target === el) {
-                    document.onmousemove = drag; document.ontouchmove = drag;
-                    document.onmouseup = dragEnd; document.ontouchend = dragEnd;
+                    document.onpointermove = drag;
+                    document.onpointerup = dragEnd;
                 }
             };
             const drag = (e) => {
-                const event = e.type === "touchmove" ? e.touches[0] : e;
+                const event = e.type.includes("touch") ? e.touches[0] : e;
                 posX = event.clientX - initialX; posY = event.clientY - initialY;
                 el.style.transform = `translate3d(${posX}px, ${posY}px, 0)`;
             };
-            const dragEnd = () => { document.onmousemove = null; document.ontouchmove = null; };
-            el.onmousedown = dragStart; el.ontouchstart = dragStart;
+            const dragEnd = () => { document.onpointermove = null; };
+            el.onpointerdown = dragStart;
         }
 
-        // Speech Engine
+        // Speech Logic
         function setupRecognition() {
             const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!Rec) return;
             STATE.recognition = new Rec();
             STATE.recognition.onresult = (e) => {
                 const res = e.results[0][0].transcript;
@@ -180,12 +185,12 @@
         }
 
         async function processCommand(text) {
-            if (!STATE.config.key) return alert("API Key Missing");
+            if (!STATE.config.key) return alert("API Key!");
             try {
                 const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: { "Authorization": `Bearer ${STATE.config.key}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({ model: STATE.config.model, messages: [{ role: 'system', content: 'You are a cat. 1 short sentence answer.' }, { role: 'user', content: text }] })
+                    body: JSON.stringify({ model: STATE.config.model, messages: [{ role: 'system', content: 'You are a cat. Short answer.' }, { role: 'user', content: text }] })
                 });
                 const data = await res.json();
                 const clean = data.choices[0].message.content;
@@ -228,9 +233,8 @@
             setupRecognition();
             setupDraggable(document.getElementById('speech-bubble'));
             setInterval(() => {
-                const eyes = document.getElementById('eyes');
-                eyes.classList.add('blink');
-                setTimeout(() => eyes.classList.remove('blink'), 150);
+                document.getElementById('eyes').classList.add('blink');
+                setTimeout(() => document.getElementById('eyes').classList.remove('blink'), 150);
             }, 4000);
             document.getElementById('api-key').value = STATE.config.key;
             document.getElementById('model-profile').value = STATE.config.model;
