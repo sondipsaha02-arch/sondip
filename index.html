@@ -3,101 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Cat | Multi-Language Support</title>
+    <title>AI Cat | Multi-Language Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; overflow: hidden; height: 100dvh; background: #f3f4f6; touch-action: none; }
+        body { font-family: 'Inter', sans-serif; overflow: hidden; height: 100dvh; background: #f1f5f9; touch-action: none; }
+        #sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; }
+        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 900; }
         
-        /* Chat Input Styling */
-        #chat-bar {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
-        }
-        #chat-bar:focus-within { box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2); transform: scale(1.01); }
+        /* Input Bar Animation */
+        #chat-bar:focus-within { ring: 2px solid #6366f1; transform: translateY(-1px); }
 
-        /* Sidebar & Overlay */
-        #sidebar { transition: transform 0.3s ease; z-index: 1000; }
-        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; }
-        
         /* Cat Animation */
-        #cat-stage { transform-origin: bottom center; }
-        .is-talking #head-group { animation: tilt 0.4s infinite alternate; }
-        @keyframes tilt { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+        #cat-stage { transform-origin: bottom center; cursor: pointer; }
+        .is-talking #head-group { animation: wobble 0.5s infinite alternate; }
+        @keyframes wobble { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
         
         .eye-lid { transform-origin: center; transition: transform 0.1s; }
         .blink .eye-lid { transform: scaleY(0.1); }
         
-        #speech-bubble { position: absolute; z-index: 80; width: 85vw; max-width: 320px; touch-action: none; }
+        #speech-bubble { position: absolute; z-index: 100; width: 85vw; max-width: 320px; touch-action: none; }
     </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-slate-50">
 
     <div id="overlay" onclick="toggleSidebar()"></div>
 
     <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl transform -translate-x-full">
         <div class="p-6 h-full flex flex-col">
-            <h2 class="text-xl font-black text-indigo-600 mb-6 italic">SETTINGS</h2>
+            <h2 class="text-xl font-black text-indigo-600 mb-8 italic"><i class="fas fa-paw mr-2"></i>SETTINGS</h2>
             
-            <div class="space-y-5 flex-1 overflow-y-auto">
+            <div class="space-y-6 flex-1">
                 <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">OpenRouter API Key</label>
-                    <input type="password" id="api-key" placeholder="sk-or-..." class="w-full mt-1 p-3 bg-gray-100 rounded-xl border-none text-xs outline-none focus:ring-2 ring-indigo-500">
+                    <input type="password" id="api-key" placeholder="sk-or-..." class="w-full mt-2 p-3 bg-gray-100 rounded-xl border-none text-sm outline-none">
                 </div>
 
                 <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Model ID</label>
-                    <input type="text" id="model-profile" value="google/gemini-2.0-flash-exp:free" class="w-full mt-1 p-3 bg-gray-100 rounded-xl border-none text-xs outline-none focus:ring-2 ring-indigo-500">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Model Profile</label>
+                    <input type="text" id="model-profile" value="google/gemini-2.0-flash-exp:free" class="w-full mt-2 p-3 bg-gray-100 rounded-xl border-none text-sm outline-none">
                 </div>
 
                 <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cat Language</label>
-                    <div class="relative mt-1">
-                        <select id="lang-select" class="w-full p-3 bg-gray-100 rounded-xl border-none text-xs appearance-none outline-none focus:ring-2 ring-indigo-500 font-bold text-gray-600">
-                            <option value="bn-BD">Bengali (বাংলা)</option>
-                            <option value="en-US">English (USA)</option>
-                            <option value="hi-IN">Hindi (हिंदी)</option>
-                            <option value="es-ES">Spanish (Español)</option>
-                        </select>
-                        <i class="fas fa-chevron-down absolute right-3 top-3 text-gray-400 text-xs pointer-events-none"></i>
-                    </div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Speech Language</label>
+                    <select id="lang-select" class="w-full mt-2 p-3 bg-gray-100 rounded-xl border-none text-sm font-bold text-gray-600 outline-none cursor-pointer">
+                        <option value="bn-BD">Bengali (বাংলাদেশ)</option>
+                        <option value="en-US">English (United States)</option>
+                    </select>
                 </div>
             </div>
 
-            <button onclick="saveSettings()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold text-sm shadow-lg active:scale-95 transition-all mt-4">Save Changes</button>
+            <button onclick="saveSettings()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-all">Save & Apply</button>
         </div>
     </aside>
 
     <main class="flex flex-col h-full relative">
         
-        <header class="absolute top-0 left-0 w-full p-4 z-50 flex justify-between items-start pointer-events-none">
-            <div class="flex items-center gap-2 pointer-events-auto w-full max-w-[85%]">
-                <button onclick="toggleSidebar()" class="w-10 h-10 flex-shrink-0 bg-white rounded-xl shadow text-indigo-600 active:scale-95 transition-transform flex items-center justify-center">
-                    <i class="fas fa-sliders-h"></i>
+        <header class="absolute top-0 left-0 w-full p-4 z-50 flex justify-between items-center pointer-events-none">
+            <div class="flex items-center gap-2 pointer-events-auto w-full max-w-[90%]">
+                <button onclick="toggleSidebar()" class="w-10 h-10 flex-shrink-0 bg-white rounded-xl shadow-md text-indigo-600 flex items-center justify-center">
+                    <i class="fas fa-cog"></i>
                 </button>
-                <div id="chat-bar" class="flex-1 flex items-center bg-white rounded-xl shadow p-1 pl-3 h-10">
-                    <input type="text" id="text-input" placeholder="Type or ask..." class="flex-1 bg-transparent border-none text-sm outline-none text-gray-700 placeholder-gray-400" onkeydown="checkEnter(event)">
-                    <button onclick="sendText()" class="w-8 h-8 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-lg ml-1 hover:bg-indigo-600 hover:text-white transition-colors">
-                        <i class="fas fa-paper-plane text-xs"></i>
+
+                <div id="chat-bar" class="flex-1 flex items-center bg-white/90 backdrop-blur rounded-xl shadow-md p-1 pl-3 h-10 transition-all">
+                    <input type="text" id="text-input" placeholder="Type a message..." class="flex-1 bg-transparent border-none text-sm outline-none text-gray-700" onkeydown="if(event.key==='Enter') sendText()">
+                    <button onclick="sendText()" class="w-8 h-8 flex items-center justify-center bg-indigo-600 text-white rounded-lg ml-1">
+                        <i class="fas fa-paper-plane text-[10px]"></i>
                     </button>
                 </div>
             </div>
-            <div id="status-chip" class="hidden sm:block pointer-events-auto px-3 py-1 bg-white/80 backdrop-blur rounded-full text-[10px] font-bold text-gray-400 uppercase shadow-sm">Ready</div>
         </header>
 
         <div class="flex-1 flex flex-col items-center justify-center relative mt-12">
             
             <div id="speech-bubble" style="left: 20px; top: 80px;">
-                <div class="bg-white/90 p-4 rounded-[1.5rem] shadow-xl border border-white/50">
-                    <div id="drag-handle" class="w-8 h-1 bg-gray-200 mx-auto mb-2 rounded-full cursor-move"></div>
-                    <p id="user-transcript" class="text-indigo-600 font-bold text-sm mb-1 min-h-[1rem]"></p>
-                    <p id="ai-caption" class="text-gray-500 text-xs italic">Meow! Select your language in settings.</p>
+                <div class="bg-white/90 backdrop-blur-md p-5 rounded-[2rem] shadow-xl border border-white">
+                    <div id="drag-handle" class="w-10 h-1 bg-gray-200 mx-auto mb-3 rounded-full cursor-move"></div>
+                    <p id="user-transcript" class="text-indigo-600 font-bold text-base mb-1 min-h-[1.2rem]"></p>
+                    <p id="ai-caption" class="text-gray-500 text-sm italic font-medium">Meow! Change my language in settings.</p>
                 </div>
             </div>
 
-            <div id="cat-stage">
-                <svg viewBox="0 0 200 200" class="w-72 h-72 sm:w-80 sm:h-80">
+            <div id="cat-stage" onclick="handleTouch()">
+                <svg viewBox="0 0 200 200" class="w-72 h-72 sm:w-80 sm:h-80 lg:w-[480px]">
                     <path d="M40 190 Q100 160 160 190 L170 200 L30 200 Z" fill="#4f46e5" />
                     <g id="head-group">
                         <path d="M55 45 L35 10 L75 35 Z" fill="#4338ca" />
@@ -113,10 +101,11 @@
                 </svg>
             </div>
 
-            <div class="absolute bottom-10 flex flex-col items-center gap-3 pointer-events-auto">
-                <button id="mic-btn" onclick="toggleMic()" class="w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center text-xl active:scale-95 transition-all">
+            <div class="absolute bottom-10 flex flex-col items-center gap-3">
+                <button id="mic-btn" onclick="toggleMic()" class="w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center text-xl transition-all active:scale-90">
                     <i id="mic-icon" class="fas fa-microphone text-gray-300"></i>
                 </button>
+                <span id="lang-indicator" class="text-[9px] font-bold text-indigo-400 uppercase tracking-widest">BN-BD Mode</span>
             </div>
         </div>
     </main>
@@ -124,6 +113,7 @@
     <script>
         const STATE = {
             listening: false,
+            speaking: false,
             config: { 
                 key: localStorage.getItem('cat_key') || '', 
                 model: localStorage.getItem('cat_model') || 'google/gemini-2.0-flash-exp:free',
@@ -131,54 +121,48 @@
             }
         };
 
-        // --- HELPER: GET PROMPT BASED ON LANGUAGE ---
-        function getSystemPrompt() {
-            const l = STATE.config.lang;
-            if (l.includes('bn')) return 'You are a cat. Reply in Bengali (Bangla). Keep it very short.';
-            if (l.includes('hi')) return 'You are a cat. Reply in Hindi. Keep it very short.';
-            if (l.includes('es')) return 'You are a cat. Reply in Spanish. Keep it very short.';
-            return 'You are a cat. Reply in English. Keep it very short.';
-        }
-
-        // --- API CALL ---
+        // --- AI LOGIC ---
         async function callAI(text) {
-            if (!STATE.config.key) return alert("API Key Missing! Check Settings.");
+            if (!STATE.config.key) return alert("Please set your API Key in Settings!");
             
             updateUI('THINKING');
+            const systemMsg = STATE.config.lang === 'bn-BD' 
+                ? "You are a cat. Reply in Bengali. Keep it very short." 
+                : "You are a cat. Reply in English. Keep it very short.";
+
             try {
                 const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: { "Authorization": `Bearer ${STATE.config.key}`, "Content-Type": "application/json" },
                     body: JSON.stringify({
                         model: STATE.config.model,
-                        messages: [
-                            { role: 'system', content: getSystemPrompt() },
-                            { role: 'user', content: text }
-                        ]
+                        messages: [{ role: 'system', content: systemMsg }, { role: 'user', content: text }]
                     })
                 });
-
                 const data = await res.json();
                 const reply = data.choices[0].message.content;
                 document.getElementById('ai-caption').innerText = reply;
                 speak(reply);
-
-            } catch (err) {
-                console.error(err);
-                updateUI('STANDBY');
-            }
+            } catch (err) { updateUI('STANDBY'); }
         }
 
         // --- SPEECH OUTPUT ---
         function speak(text) {
+            STATE.speaking = true;
             window.speechSynthesis.cancel();
             const ut = new SpeechSynthesisUtterance(text);
-            ut.lang = STATE.config.lang; // Use selected language
+            ut.lang = STATE.config.lang;
             
+            const mouth = document.getElementById('mouth-path');
+            const anim = setInterval(() => mouth.setAttribute('ry', Math.random() * 7 + 1), 80);
+
             ut.onstart = () => updateUI('SPEAKING');
             ut.onend = () => {
+                STATE.speaking = false;
+                clearInterval(anim);
+                mouth.setAttribute('ry', '1');
                 updateUI('STANDBY');
-                if (STATE.listening) rec.start(); 
+                if (STATE.listening) rec.start();
             };
             window.speechSynthesis.speak(ut);
         }
@@ -186,11 +170,8 @@
         // --- SPEECH INPUT ---
         const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
         const rec = Rec ? new Rec() : null;
-        
-        function setupRec() {
-            if(!rec) return;
-            rec.lang = STATE.config.lang; // Update lang config
-            rec.continuous = false;
+        if(rec) {
+            rec.lang = STATE.config.lang;
             rec.onstart = () => updateUI('LISTENING');
             rec.onresult = (e) => {
                 const txt = e.results[0][0].transcript;
@@ -198,47 +179,41 @@
                 callAI(txt);
             };
             rec.onend = () => {
-                if(STATE.listening) setTimeout(() => { try{rec.start()}catch(e){} }, 300);
+                if(STATE.listening && !STATE.speaking) setTimeout(() => { try{rec.start()}catch(e){} }, 300);
             };
         }
-        setupRec(); // Init
 
         function toggleMic() {
-            if(!rec) return alert("Mic not supported");
             STATE.listening = !STATE.listening;
-            
-            // Ensure lang is set before starting
-            rec.lang = STATE.config.lang; 
-            
-            STATE.listening ? rec.start() : rec.stop();
-            updateUI(STATE.listening ? 'LISTENING' : 'STANDBY');
+            if(STATE.listening) {
+                rec.lang = STATE.config.lang; // Update lang before start
+                rec.start();
+            } else {
+                rec.stop();
+                updateUI('STANDBY');
+            }
         }
 
-        // --- TEXT INPUT ---
         function sendText() {
             const input = document.getElementById('text-input');
-            const val = input.value.trim();
-            if(!val) return;
-            
-            document.getElementById('user-transcript').innerText = val;
+            if(!input.value.trim()) return;
+            document.getElementById('user-transcript').innerText = input.value;
+            callAI(input.value);
             input.value = '';
             input.blur();
-            callAI(val);
         }
-        function checkEnter(e) { if(e.key==='Enter') sendText(); }
 
-        // --- UI & SETTINGS ---
+        // --- UI UTILS ---
         function updateUI(status) {
             const icon = document.getElementById('mic-icon');
             const body = document.body;
             body.classList.remove('is-talking');
-            
+
             if (status === 'LISTENING') icon.className = "fas fa-microphone text-indigo-600";
             else if (status === 'SPEAKING') {
                 body.classList.add('is-talking');
                 icon.className = "fas fa-volume-up text-green-500";
-            }
-            else if (status === 'THINKING') icon.className = "fas fa-spinner fa-spin text-orange-500";
+            } else if (status === 'THINKING') icon.className = "fas fa-circle-notch fa-spin text-orange-500";
             else icon.className = "fas fa-microphone text-gray-300";
         }
 
@@ -258,19 +233,23 @@
             localStorage.setItem('cat_model', STATE.config.model);
             localStorage.setItem('cat_lang', STATE.config.lang);
             
-            // Refresh Mic Settings
+            document.getElementById('lang-indicator').innerText = `${STATE.config.lang} Mode`;
             if(rec) rec.lang = STATE.config.lang;
             
             toggleSidebar();
-            alert(`Saved! Language set to: ${STATE.config.lang}`);
+        }
+
+        function handleTouch() {
+            document.getElementById('eyes').classList.add('blink');
+            setTimeout(() => document.getElementById('eyes').classList.remove('blink'), 200);
         }
 
         window.onload = () => {
             document.getElementById('api-key').value = STATE.config.key;
             document.getElementById('model-profile').value = STATE.config.model;
             document.getElementById('lang-select').value = STATE.config.lang;
-            
-            // Draggable
+            document.getElementById('lang-indicator').innerText = `${STATE.config.lang} Mode`;
+
             const bubble = document.getElementById('speech-bubble');
             let px=0, py=0, ix, iy;
             document.getElementById('drag-handle').onpointerdown = (e) => {
@@ -282,7 +261,6 @@
                 document.onpointerup = () => document.onpointermove = null;
             };
 
-            // Blink
             setInterval(() => {
                 document.getElementById('eyes').classList.add('blink');
                 setTimeout(() => document.getElementById('eyes').classList.remove('blink'), 150);
