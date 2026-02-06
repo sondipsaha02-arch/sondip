@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Cat | Complete Settings & Voice</title>
+    <title>AI Cat | OpenRouter Full Edition</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -15,35 +15,31 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { font-family: 'Inter', sans-serif; overflow: hidden; height: 100dvh; background: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; overflow: hidden; height: 100dvh; background: #f1f5f9; touch-action: none; }
         
-        /* Sidebar Scroll Fix */
-        #sidebar { transition: transform 0.3s ease; z-index: 1000; overflow-y: auto; }
+        #sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; }
         #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 900; }
 
-        /* Voice Wave Animation */
-        .wave-container { position: absolute; width: 300px; height: 300px; display: none; justify-content: center; align-items: center; pointer-events: none;}
+        /* Voice Waves */
+        .wave-container { position: absolute; width: 300px; height: 300px; display: none; justify-content: center; align-items: center; pointer-events: none; }
         .is-listening .wave-container { display: flex; }
         .wave { position: absolute; border: 2px solid #6366f1; opacity: 0; border-radius: 50%; animation: ripple 2s infinite; }
         .wave:nth-child(2) { animation-delay: 0.5s; }
         .wave:nth-child(3) { animation-delay: 1s; }
+        @keyframes ripple { 0% { width: 100px; height: 100px; opacity: 0.8; } 100% { width: 400px; height: 400px; opacity: 0; } }
 
-        @keyframes ripple {
-            0% { width: 100px; height: 100px; opacity: 0.8; }
-            100% { width: 400px; height: 400px; opacity: 0; }
-        }
-
-        /* Animations */
-        #cat-stage { transform-origin: bottom center; z-index: 10; cursor: pointer; }
+        /* Cat Animations */
+        #cat-stage { transform-origin: bottom center; cursor: pointer; }
         .is-talking #head-group { animation: talk-shake 0.4s infinite alternate; }
-        @keyframes talk-shake { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
-        
+        @keyframes talk-shake { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
         .eye-lid { transform-origin: center; transition: transform 0.1s; }
         .blink .eye-lid { transform: scaleY(0.1); }
-        #speech-bubble { position: absolute; z-index: 100; width: 85vw; max-width: 320px; }
+
+        /* Draggable UI */
+        #speech-bubble { position: absolute; z-index: 100; width: 85vw; max-width: 320px; pointer-events: auto; }
     </style>
 </head>
-<body class="dark:bg-dark">
+<body class="dark:bg-dark transition-colors duration-500">
 
     <div id="overlay" onclick="toggleSidebar()"></div>
 
@@ -51,41 +47,41 @@
         
         <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-900 shadow-2xl transform -translate-x-full">
             <div class="p-6 h-full flex flex-col">
-                <div class="flex justify-between items-center mb-6">
-                    <span class="font-black text-primary italic">CAT CORE PRO</span>
-                    <button onclick="toggleSidebar()"><i class="fas fa-times text-gray-400"></i></button>
+                <div class="flex justify-between items-center mb-8">
+                    <span class="font-black text-primary italic">VOICE SETTINGS</span>
+                    <button onclick="toggleSidebar()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
                 </div>
 
-                <div class="space-y-6 flex-1">
+                <div class="space-y-6 flex-1 overflow-y-auto">
                     <div>
                         <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">OpenRouter API Key</label>
-                        <input type="password" id="api-key" placeholder="sk-or-..." class="w-full mt-2 p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-sm focus:ring-2 ring-primary transition-all">
+                        <input type="password" id="api-key" placeholder="sk-or-..." class="w-full mt-2 p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-sm focus:ring-2 ring-primary">
                     </div>
 
                     <div>
-                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Model ID</label>
-                        <input type="text" id="model-profile" placeholder="google/gemini-2.0-flash-exp:free" class="w-full mt-2 p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-sm focus:ring-2 ring-primary transition-all">
-                        <p class="text-[9px] text-gray-500 mt-2">Example: google/gemini-2.0-flash-exp:free</p>
+                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Model Profile (ID)</label>
+                        <input type="text" id="model-profile" placeholder="google/gemini-2.0-flash-exp:free" class="w-full mt-2 p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-sm focus:ring-2 ring-primary">
+                        <p class="text-[9px] text-gray-500 mt-1">E.g., google/gemini-flash-1.5-8b</p>
                     </div>
 
                     <div>
-                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">AI Voice</label>
+                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Choose Voice</label>
                         <select id="voice-select" class="w-full mt-2 p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-xs"></select>
                     </div>
                 </div>
 
-                <button onclick="saveSettings()" class="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-lg shadow-primary/20 mt-6 active:scale-95 transition-transform">Save & Initialize</button>
+                <button onclick="saveSettings()" class="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-lg mt-6 active:scale-95 transition-all">Save & Start Conversation</button>
             </div>
         </aside>
 
         <main class="flex-1 flex flex-col relative">
             <header class="p-6 flex justify-between items-center z-50">
-                <button onclick="toggleSidebar()" class="w-10 h-10 bg-white/80 dark:bg-gray-800 rounded-xl shadow-sm flex items-center justify-center">
-                    <i class="fas fa-sliders-h text-primary"></i>
+                <button onclick="toggleSidebar()" class="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl shadow-md flex items-center justify-center">
+                    <i class="fas fa-bars-staggered text-primary"></i>
                 </button>
-                <div class="flex items-center gap-2 bg-white/50 px-3 py-1 rounded-full border border-white/20">
+                <div class="flex items-center gap-2 bg-white/50 px-3 py-1 rounded-full text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                     <div id="led" class="w-2 h-2 rounded-full bg-gray-300"></div>
-                    <span id="status-text" class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Standby</span>
+                    <span id="status-text">Standby</span>
                 </div>
             </header>
 
@@ -94,15 +90,15 @@
                 <div class="wave-container"><div class="wave"></div><div class="wave"></div><div class="wave"></div></div>
 
                 <div id="speech-bubble" style="left: 20px; top: 100px;">
-                    <div class="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md p-5 rounded-[2.5rem] shadow-xl border border-white/20">
+                    <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-5 rounded-[2.5rem] shadow-2xl border border-white/20">
                         <div id="drag-handle" class="w-12 h-1 bg-gray-200 dark:bg-gray-700 mx-auto mb-3 rounded-full cursor-move"></div>
                         <p id="user-transcript" class="text-primary font-bold text-lg mb-1 min-h-[1.5rem]"></p>
                         <p id="ai-caption" class="text-gray-400 text-sm italic font-medium"></p>
                     </div>
                 </div>
 
-                <div id="cat-stage" onpointerdown="handleTouch(event)">
-                    <svg viewBox="0 0 200 200" class="w-64 h-64 sm:w-80 sm:h-80 lg:w-[480px]">
+                <div id="cat-stage" onpointerdown="handleCatTouch()">
+                    <svg viewBox="0 0 200 200" class="w-72 h-72 sm:w-80 sm:h-80 lg:w-[480px]">
                         <path d="M40 190 Q100 160 160 190 L170 200 L30 200 Z" fill="#4f46e5" />
                         <g id="head-group">
                             <path id="ear-l" d="M55 45 L35 10 L75 35 Z" fill="#4338ca" />
@@ -119,10 +115,10 @@
                 </div>
 
                 <div class="absolute bottom-10 flex flex-col items-center gap-4">
-                    <button id="mic-btn" onclick="toggleVoiceMode()" class="w-20 h-20 rounded-full bg-white dark:bg-gray-800 shadow-2xl flex items-center justify-center text-2xl active:scale-90 transition-all">
+                    <button id="mic-btn" onclick="toggleVoiceMode()" class="w-20 h-20 rounded-full bg-white dark:bg-gray-800 shadow-2xl flex items-center justify-center text-2xl border-4 border-transparent transition-all">
                         <i id="mic-icon" class="fas fa-microphone text-gray-300"></i>
                     </button>
-                    <span class="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Live Conversation</span>
+                    <p id="mic-instruction" class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Tap to start talking</p>
                 </div>
             </div>
         </main>
@@ -134,11 +130,11 @@
             speaking: false,
             config: { 
                 key: localStorage.getItem('cat_key') || '', 
-                model: localStorage.getItem('cat_model') || 'google/gemini-flash-1.5-8b' 
+                model: localStorage.getItem('cat_model') || 'google/gemini-2.0-flash-exp:free' 
             }
         };
 
-        // --- CORE VOICE ENGINE ---
+        // --- CONTINUOUS VOICE ENGINE ---
         function setupRecognition() {
             const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRec) return;
@@ -159,7 +155,7 @@
         }
 
         async function sendToAI(text) {
-            if (!STATE.config.key) return alert("API Key ও Model সেট করুন!");
+            if (!STATE.config.key) return alert("Settings-e API Key ebong Model Profile din!");
             updateUI('THINKING');
             try {
                 const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -167,7 +163,7 @@
                     headers: { "Authorization": `Bearer ${STATE.config.key}`, "Content-Type": "application/json" },
                     body: JSON.stringify({
                         model: STATE.config.model,
-                        messages: [{ role: 'system', content: 'You are a cat. One short sentence in Bengali.' }, { role: 'user', content: text }]
+                        messages: [{ role: 'system', content: 'You are a cute AI cat. Reply in one short sentence in Bengali.' }, { role: 'user', content: text }]
                     })
                 });
                 const data = await res.json();
@@ -196,12 +192,13 @@
             window.speechSynthesis.speak(ut);
         }
 
-        // UI & Settings
+        // --- UI & LOGIC ---
         function updateUI(mode) {
             const app = document.getElementById('app');
             const led = document.getElementById('led');
             const icon = document.getElementById('mic-icon');
             const status = document.getElementById('status-text');
+            const inst = document.getElementById('mic-instruction');
 
             app.classList.remove('is-listening', 'is-talking');
             led.className = "w-2 h-2 rounded-full bg-gray-300";
@@ -211,6 +208,7 @@
                 led.classList.add('bg-green-500', 'animate-pulse');
                 icon.className = "fas fa-microphone text-primary";
                 status.innerText = "Listening...";
+                inst.innerText = "I am listening...";
             } else if (mode === 'SPEAKING') {
                 app.classList.add('is-talking');
                 led.classList.add('bg-blue-500');
@@ -219,6 +217,10 @@
             } else if (mode === 'THINKING') {
                 icon.className = "fas fa-circle-notch fa-spin text-primary";
                 status.innerText = "Thinking...";
+            } else {
+                icon.className = "fas fa-microphone text-gray-300";
+                status.innerText = "Standby";
+                inst.innerText = "Tap to start talking";
             }
         }
 
@@ -248,11 +250,11 @@
             localStorage.setItem('cat_key', STATE.config.key);
             localStorage.setItem('cat_model', STATE.config.model);
             toggleSidebar();
-            alert("Settings Saved!");
+            alert("Settings Saved! Conversation start korte mic-e click korun.");
         }
 
-        function handleTouch(e) {
-            if (navigator.vibrate) navigator.vibrate(50);
+        function handleCatTouch() {
+            if (navigator.vibrate) navigator.vibrate(40);
             const eyes = document.getElementById('eyes');
             eyes.classList.add('blink');
             setTimeout(() => eyes.classList.remove('blink'), 500);
@@ -262,7 +264,7 @@
             document.getElementById('api-key').value = STATE.config.key;
             document.getElementById('model-profile').value = STATE.config.model;
             
-            // Draggable
+            // Draggable Speech Bubble
             const bubble = document.getElementById('speech-bubble');
             let px = 0, py = 0, ix, iy;
             bubble.onpointerdown = (e) => {
@@ -275,11 +277,10 @@
                 document.onpointerup = () => document.onpointermove = null;
             };
 
-            // Blink
+            // Natural Blink
             setInterval(() => {
-                const eyes = document.getElementById('eyes');
-                eyes.classList.add('blink');
-                setTimeout(() => eyes.classList.remove('blink'), 150);
+                document.getElementById('eyes').classList.add('blink');
+                setTimeout(() => document.getElementById('eyes').classList.remove('blink'), 150);
             }, 4000);
         };
     </script>
