@@ -1,1077 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Cat Companion</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+Bengali:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        
-        body { 
-            font-family: 'Inter', 'Noto Sans Bengali', sans-serif; 
-            overflow: hidden; 
-            height: 100dvh; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            touch-action: none; 
-            user-select: none;
-        }
-        
-        .glass {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        }
-        
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-        }
-        
-        /* Device Switch */
-        .device-switch {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            display: flex;
-            gap: 10px;
-            padding: 8px;
-            border-radius: 20px;
-        }
-        
-        .device-btn {
-            padding: 10px 20px;
-            border-radius: 15px;
-            border: none;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            font-size: 13px;
-            letter-spacing: 0.5px;
-        }
-        
-        .device-btn.active {
-            background: white;
-            color: #764ba2;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transform: scale(1.05);
-        }
-        
-        /* Caption Box */
-        .caption-box {
-            position: fixed;
-            z-index: 100;
-            touch-action: none;
-        }
-        
-        .mobile-mode .caption-box {
-            bottom: 140px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 92%;
-            max-width: 400px;
-            min-height: 160px;
-        }
-        
-        .pc-mode .caption-box {
-            top: 100px;
-            right: 40px;
-            width: 380px;
-            min-height: 180px;
-        }
-        
-        .caption-header {
-            cursor: grab;
-            padding: 12px;
-            margin: -4px -4px 8px -4px;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .caption-header:active {
-            cursor: grabbing;
-        }
-        
-        /* Text Input */
-        .input-area {
-            display: flex;
-            gap: 8px;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid rgba(0,0,0,0.1);
-        }
-        
-        .text-input {
-            flex: 1;
-            padding: 10px 14px;
-            border: 2px solid rgba(118, 75, 162, 0.2);
-            border-radius: 12px;
-            font-size: 14px;
-            outline: none;
-            font-family: inherit;
-        }
-        
-        .text-input:focus {
-            border-color: #764ba2;
-        }
-        
-        .send-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            border: none;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s;
-        }
-        
-        .send-btn:active {
-            transform: scale(0.95);
-        }
-        
-        /* Settings Panel */
-        #sidebar {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1000;
-        }
-        
-        #overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(4px);
-            z-index: 900;
-        }
-        
-        /* Cat Stage */
-        #cat-stage {
-            transform-origin: bottom center;
-            cursor: pointer;
-            position: relative;
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        
-        /* Pet Zone */
-        .pet-zone {
-            position: absolute;
-            top: 15%;
-            left: 20%;
-            width: 60%;
-            height: 50%;
-            cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23e91e63' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'/%3E%3C/svg%3E") 16 16, auto;
-            z-index: 10;
-        }
-        
-        /* Heart Particles */
-        .heart-particle {
-            position: absolute;
-            color: #e91e63;
-            font-size: 24px;
-            pointer-events: none;
-            animation: floatUp 1.5s ease-out forwards;
-            z-index: 50;
-        }
-        
-        @keyframes floatUp {
-            0% { transform: translateY(0) scale(0); opacity: 1; }
-            50% { transform: translateY(-60px) scale(1.2); opacity: 1; }
-            100% { transform: translateY(-120px) scale(0.8); opacity: 0; }
-        }
-        
-        /* Shock Wave for Scolding */
-        .shock-wave {
-            position: absolute;
-            border: 3px solid #ef4444;
-            border-radius: 50%;
-            width: 100px;
-            height: 100px;
-            pointer-events: none;
-            animation: shockExpand 0.6s ease-out forwards;
-        }
-        
-        @keyframes shockExpand {
-            0% { transform: scale(0); opacity: 1; }
-            100% { transform: scale(3); opacity: 0; }
-        }
-        
-        /* Cat Animations */
-        .is-petting {
-            animation: petBounce 0.6s ease-in-out infinite;
-        }
-        
-        @keyframes petBounce {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            25% { transform: scale(1.05) rotate(-2deg); }
-            75% { transform: scale(1.05) rotate(2deg); }
-        }
-        
-        .is-angry {
-            animation: shake 0.5s infinite;
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px) rotate(-5deg); }
-            75% { transform: translateX(10px) rotate(5deg); }
-        }
-        
-        .is-sad {
-            transform: translateY(20px) rotate(-5deg);
-            opacity: 0.8;
-        }
-        
-        .is-happy {
-            animation: bounce 2s infinite;
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
-        
-        /* Action Animations */
-        .is-dancing {
-            animation: dance 0.5s infinite;
-        }
-        
-        .is-sleeping {
-            opacity: 0.6;
-            filter: brightness(0.7);
-        }
-        
-        .is-eating {
-            animation: eat 1s infinite;
-        }
-        
-        .is-partying {
-            animation: party 0.3s infinite;
-        }
-        
-        @keyframes dance {
-            0%, 100% { transform: rotate(-10deg) translateY(0); }
-            50% { transform: rotate(10deg) translateY(-20px); }
-        }
-        
-        @keyframes eat {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1) translateY(10px); }
-        }
-        
-        @keyframes party {
-            0% { transform: translate(0,0) rotate(0deg); }
-            25% { transform: translate(10px,-10px) rotate(5deg); }
-            50% { transform: translate(-10px,10px) rotate(-5deg); }
-            75% { transform: translate(10px,10px) rotate(5deg); }
-            100% { transform: translate(0,0) rotate(0deg); }
-        }
-        
-        /* Environment Backgrounds */
-        .env-party {
-            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%) !important;
-            animation: partyBg 2s infinite alternate;
-        }
-        
-        .env-sleep {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
-        }
-        
-        .env-eat {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
-        }
-        
-        .env-dance {
-            background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%) !important;
-            animation: danceBg 1s infinite;
-        }
-        
-        @keyframes partyBg {
-            from { filter: hue-rotate(0deg); }
-            to { filter: hue-rotate(30deg); }
-        }
-        
-        @keyframes danceBg {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-        
-        /* SVG Styles */
-        #head-group {
-            transform-origin: center;
-            transition: transform 0.3s;
-        }
-        
-        .is-talking #head-group {
-            animation: wobble 0.5s infinite alternate;
-        }
-        
-        @keyframes wobble {
-            from { transform: rotate(-4deg); }
-            to { transform: rotate(4deg); }
-        }
-        
-        .ear {
-            transform-origin: bottom center;
-            transition: transform 0.3s;
-        }
-        
-        .is-happy .ear:nth-child(1) { animation: earWiggleLeft 2s infinite; }
-        .is-happy .ear:nth-child(2) { animation: earWiggleRight 2s infinite; }
-        .is-sad .ear { transform: rotate(20deg) translateY(10deg); }
-        .is-angry .ear:nth-child(1) { transform: rotate(-30deg); }
-        .is-angry .ear:nth-child(2) { transform: rotate(30deg); }
-        
-        @keyframes earWiggleLeft {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(-15deg); }
-        }
-        
-        @keyframes earWiggleRight {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(15deg); }
-        }
-        
-        .eye-lid {
-            transform-origin: center;
-            transition: transform 0.1s;
-        }
-        
-        .blink .eye-lid { transform: scaleY(0.1); }
-        .is-sad .eye-lid { transform: scaleY(0.6) rotate(10deg); }
-        .is-angry .eye-lid { transform: scaleY(0.8) rotate(-5deg); }
-        .is-sleeping .eye-lid { transform: scaleY(1); }
-        
-        #mouth-path {
-            transition: all 0.3s;
-        }
-        
-        .is-happy #mouth-path { rx: 12; ry: 8; }
-        .is-sad #mouth-path { rx: 12; ry: 3; transform: translateY(5px); }
-        .is-angry #mouth-path { rx: 8; ry: 3; }
-        .is-eating #mouth-path { animation: chew 0.5s infinite; }
-        
-        @keyframes chew {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(0.8); }
-        }
-        
-        /* Action Menu */
-        .action-menu {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-            padding: 15px;
-            border-radius: 30px;
-            z-index: 100;
-            flex-wrap: wrap;
-            justify-content: center;
-            max-width: 95%;
-        }
-        
-        .action-btn {
-            padding: 12px 20px;
-            border-radius: 20px;
-            border: none;
-            background: white;
-            color: #764ba2;
-            font-weight: 700;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .action-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
-        .action-btn:active { transform: scale(0.95); }
-        
-        /* Mic Button */
-        .mic-btn {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            border: none;
-            background: white;
-            color: #764ba2;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .mic-btn:hover { transform: scale(1.1); }
-        .mic-btn:active { transform: scale(0.9); }
-        .mic-btn.listening { animation: pulse 1.5s infinite; color: #ef4444; }
-        
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            50% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
-        }
-        
-        /* Utility */
-        .hidden { display: none !important; }
-        
-        @media (max-width: 768px) {
-            .device-switch { top: 10px; right: 10px; }
-            .device-btn { padding: 8px 14px; font-size: 12px; }
-            .pc-mode .caption-box { width: 90%; right: 5%; top: 80px; }
-            .action-menu { bottom: 10px; padding: 10px; }
-            .action-btn { padding: 10px 14px; font-size: 12px; }
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>AI Cat – Emotional Companion</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+<!-- MediaPipe -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+<style>
+body { background:#f8fafc; overflow:hidden; }
+#cat { transition: transform .5s ease; transform-origin: bottom center; }
+.emotion-happy #cat { transform: translateY(-8px) scale(1.03); }
+.emotion-sad #cat { transform: translateY(8px) scale(.97); opacity:.85 }
+.emotion-shy #cat { transform: rotate(-6deg) scale(.96); }
+.emotion-sulk #cat { transform: rotate(6deg) translateY(6px); }
+.emotion-sleep #cat { animation: breathe 2s infinite; opacity:.8 }
+@keyframes breathe { 50% { transform: scale(1.02) } }
+</style>
 </head>
-<body class="pc-mode">
 
-    <!-- Overlay -->
-    <div id="overlay" onclick="toggleSidebar()"></div>
+<body class="flex flex-col items-center justify-center h-screen">
 
-    <!-- Device Switch -->
-    <div class="device-switch glass">
-        <button class="device-btn active" onclick="switchDevice('pc')">
-            <i class="fas fa-desktop"></i> PC
-        </button>
-        <button class="device-btn" onclick="switchDevice('mobile')">
-            <i class="fas fa-mobile-alt"></i> Mobile
-        </button>
-    </div>
+<!-- CAMERA -->
+<video id="camera" autoplay playsinline class="hidden"></video>
 
-    <!-- Settings Sidebar -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 w-80 glass-panel shadow-2xl transform -translate-x-full overflow-y-auto">
-        <div class="p-6 h-full flex flex-col">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-2xl font-black text-indigo-600 italic">SETTINGS</h2>
-                <button onclick="toggleSidebar()" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="space-y-6 flex-1">
-                <div class="setting-item">
-                    <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">OpenRouter API Key</label>
-                    <input type="password" id="api-key" placeholder="sk-or-..." class="w-full mt-2 p-4 bg-gray-100 rounded-xl border-none text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                
-                <div class="setting-item">
-                    <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Model ID</label>
-                    <input type="text" id="model-profile" value="google/gemini-2.0-flash-exp:free" class="w-full mt-2 p-4 bg-gray-100 rounded-xl border-none text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                
-                <div class="setting-item">
-                    <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">UI Theme</label>
-                    <div class="flex gap-3 mt-2">
-                        <button onclick="setTheme('purple')" class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg hover:scale-110 transition-transform"></button>
-                        <button onclick="setTheme('blue')" class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-cyan-600 shadow-lg hover:scale-110 transition-transform"></button>
-                        <button onclick="setTheme('pink')" class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-rose-600 shadow-lg hover:scale-110 transition-transform"></button>
-                    </div>
-                </div>
-                
-                <div class="setting-item">
-                    <label class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Cat Size</label>
-                    <input type="range" id="cat-size" min="200" max="500" value="350" class="w-full mt-2 accent-indigo-600" oninput="updateCatSize(this.value)">
-                </div>
-                
-                <div class="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
-                    <p class="text-[10px] text-indigo-700 font-bold uppercase mb-2">Interactions:</p>
-                    <p class="text-[11px] text-indigo-600 italic">• Hover/Touch cat head = Pet (makes happy)</p>
-                    <p class="text-[11px] text-indigo-600 italic">• Long press cat = Scold (makes sad)</p>
-                    <p class="text-[11px] text-indigo-600 italic">• Voice: "dance", "sleep", "eat", "party"</p>
-                </div>
-            </div>
-            
-            <button onclick="saveSettings()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-indigo-700 transition-colors mt-6">
-                Save Config
-            </button>
-        </div>
-    </aside>
+<!-- HEADER -->
+<div class="absolute top-4 flex gap-2">
+<select id="personality" class="p-2 rounded-xl bg-indigo-100 text-xs font-bold">
+<option value="cute">😺 Cute</option>
+<option value="sarcastic">😼 Sarcastic</option>
+<option value="wise">🧙 Wise</option>
+</select>
+</div>
 
-    <!-- Main Content -->
-    <main class="flex flex-col h-full relative">
-        
-        <!-- Caption Box -->
-        <div id="caption-box" class="caption-box glass-panel rounded-3xl p-5 shadow-2xl">
-            <div class="caption-header" id="caption-header">
-                <div class="flex items-center gap-2">
-                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Live Caption</span>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="toggleSidebar()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors">
-                        <i class="fas fa-cog text-xs"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="space-y-3">
-                <!-- English Text -->
-                <div>
-                    <p class="text-[10px] font-bold text-indigo-400 uppercase mb-1">Voice (English)</p>
-                    <p id="user-transcript" class="text-gray-800 font-semibold text-base min-h-[1.5rem]"></p>
-                    <p id="ai-caption" class="text-indigo-600 font-bold text-lg mt-1">Hello! I'm your AI Cat.</p>
-                </div>
-                
-                <!-- Bengali Translation (Mobile Only) -->
-                <div id="translation-box" class="hidden pt-3 border-t border-gray-200">
-                    <p class="text-[10px] font-bold text-pink-400 uppercase mb-1">বাংলা অনুবাদ</p>
-                    <p id="translation-text" class="text-gray-600 text-base" style="font-family: 'Noto Sans Bengali', sans-serif;">
-                        হ্যালো! আমি তোমার এআই বিড়াল।
-                    </p>
-                </div>
-            </div>
-            
-            <!-- Text Input -->
-            <div class="input-area">
-                <input type="text" id="text-input" placeholder="Type your message..." class="text-input" onkeypress="if(event.key==='Enter') sendText()">
-                <button onclick="sendText()" class="send-btn">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
-            
-            <!-- Status -->
-            <div class="mt-4 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <span id="lang-tag" class="text-[9px] font-bold px-2 py-1 bg-indigo-100 text-indigo-600 rounded-full uppercase">EN-US</span>
-                    <span id="emotion-badge" class="text-[9px] font-bold px-2 py-1 bg-pink-100 text-pink-600 rounded-full">Happy</span>
-                </div>
-                <button onclick="toggleMic()" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600">
-                    <i id="mic-icon" class="fas fa-microphone text-sm"></i>
-                </button>
-            </div>
-        </div>
+<!-- CAT -->
+<svg id="cat" viewBox="0 0 200 200" width="320">
+<circle cx="100" cy="110" r="70" fill="#6366f1"/>
+<circle cx="80" cy="100" r="6" fill="#111"/>
+<circle cx="120" cy="100" r="6" fill="#111"/>
+<ellipse cx="100" cy="135" rx="12" ry="2" fill="#111"/>
+</svg>
 
-        <!-- Cat Stage -->
-        <div class="flex-1 flex flex-col items-center justify-center relative">
-            <div id="cat-stage" class="w-72 h-72 sm:w-80 sm:h-80 lg:w-[450px] lg:h-[450px]">
-                <!-- Pet Zone Overlay -->
-                <div class="pet-zone" id="pet-zone"></div>
-                
-                <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-2xl">
-                    <!-- Shadow -->
-                    <ellipse cx="100" cy="190" rx="70" ry="20" fill="rgba(0,0,0,0.2)" />
-                    
-                    <!-- Body -->
-                    <path d="M40 180 Q100 160 160 180 L170 200 L30 200 Z" fill="#4f46e5" />
-                    
-                    <g id="head-group">
-                        <!-- Ears -->
-                        <path class="ear" d="M55 45 L35 10 L75 35 Z" fill="#4338ca" />
-                        <path class="ear" d="M145 45 L165 10 L125 35 Z" fill="#4338ca" />
-                        
-                        <!-- Head -->
-                        <circle cx="100" cy="100" r="80" fill="#6366f1" />
-                        <circle cx="100" cy="110" r="62" fill="#e0e7ff" />
-                        
-                        <!-- Eyes -->
-                        <g id="eyes">
-                            <circle class="eye-lid" cx="78" cy="105" r="10" fill="#1e293b" />
-                            <circle class="eye-lid" cx="122" cy="105" r="10" fill="#1e293b" />
-                        </g>
-                        
-                        <!-- Nose -->
-                        <path d="M95 125 L105 125 L100 132 Z" fill="#fda4af" />
-                        
-                        <!-- Mouth -->
-                        <ellipse id="mouth-path" cx="100" cy="145" rx="12" ry="3" fill="#1e293b" />
-                        
-                        <!-- Whiskers -->
-                        <g stroke="#4338ca" stroke-width="2" opacity="0.3">
-                            <line x1="50" y1="130" x2="20" y2="125" />
-                            <line x1="50" y1="140" x2="20" y2="145" />
-                            <line x1="150" y1="130" x2="180" y2="125" />
-                            <line x1="150" y1="140" x2="180" y2="145" />
-                        </g>
-                    </g>
-                    
-                    <!-- Paws -->
-                    <ellipse cx="60" cy="195" rx="15" ry="10" fill="#818cf8" />
-                    <ellipse cx="140" cy="195" rx="15" ry="10" fill="#818cf8" />
-                </svg>
-            </div>
+<!-- SPEECH -->
+<div class="bg-white p-4 rounded-2xl shadow-xl text-center max-w-sm">
+<p id="aiText" class="font-semibold text-gray-700">Hello! I'm alive now 😼</p>
+<p id="bnText" class="text-sm italic text-gray-500 mt-1">আমি এখন জীবন্ত।</p>
+</div>
 
-            <!-- Mic Button (Main) -->
-            <div class="absolute bottom-32 flex flex-col items-center gap-3">
-                <button id="mic-btn-main" onclick="toggleMic()" class="mic-btn">
-                    <i id="mic-icon-main" class="fas fa-microphone"></i>
-                </button>
-                <p class="text-white text-xs font-medium opacity-80">Tap to talk</p>
-            </div>
-        </div>
-    </main>
+<!-- CONTROLS -->
+<div class="mt-4 flex gap-3">
+<button onclick="pet()" class="bg-white px-4 py-2 rounded-full shadow">🤲 Pet</button>
+<button onclick="scold()" class="bg-white px-4 py-2 rounded-full shadow">☝️ Scold</button>
+</div>
 
-    <!-- Action Menu -->
-    <div class="action-menu glass">
-        <button class="action-btn" onclick="performAction('dance')">
-            <i class="fas fa-music"></i> Dance
-        </button>
-        <button class="action-btn" onclick="performAction('sleep')">
-            <i class="fas fa-bed"></i> Sleep
-        </button>
-        <button class="action-btn" onclick="performAction('eat')">
-            <i class="fas fa-fish"></i> Eat
-        </button>
-        <button class="action-btn" onclick="performAction('party')">
-            <i class="fas fa-glass-cheers"></i> Party
-        </button>
-    </div>
+<!-- XP -->
+<div class="absolute bottom-4 bg-indigo-100 px-4 py-1 rounded-full text-xs font-bold">
+XP: <span id="xp">0</span> | Level <span id="lvl">1</span>
+</div>
 
-    <script>
-        // State
-        const STATE = {
-            device: 'pc',
-            listening: false,
-            speaking: false,
-            lang: 'en-US',
-            mobileLang: 'bn-BD',
-            emotion: 'happy',
-            config: {
-                key: localStorage.getItem('cat_key') || '',
-                model: localStorage.getItem('cat_model') || 'google/gemini-2.0-flash-exp:free'
-            }
-        };
+<script>
+/* ================= STATE ================= */
+const STATE = {
+xp: Number(localStorage.getItem("xp")||0),
+level: Number(localStorage.getItem("level")||1),
+mood: localStorage.getItem("mood")||"neutral",
+personality: "cute"
+};
 
-        // Device Switch
-        function switchDevice(device) {
-            STATE.device = device;
-            document.body.className = device + '-mode';
-            
-            document.querySelectorAll('.device-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if(btn.textContent.toLowerCase().includes(device)) btn.classList.add('active');
-            });
-            
-            const translationBox = document.getElementById('translation-box');
-            const langTag = document.getElementById('lang-tag');
-            
-            if(device === 'mobile') {
-                translationBox.classList.remove('hidden');
-                langTag.textContent = 'BN-EN';
-                setupDrag();
-            } else {
-                translationBox.classList.add('hidden');
-                langTag.textContent = 'EN-US';
-                // Reset position for PC
-                const box = document.getElementById('caption-box');
-                box.style.transform = '';
-                box.style.left = '';
-                box.style.top = '';
-            }
-            
-            document.body.classList.remove('env-party', 'env-sleep', 'env-eat', 'env-dance');
-        }
+/* ================= MEMORY ================= */
+function saveMemory(){
+localStorage.setItem("xp",STATE.xp);
+localStorage.setItem("level",STATE.level);
+localStorage.setItem("mood",STATE.mood);
+}
 
-        // Drag for Mobile
-        function setupDrag() {
-            const box = document.getElementById('caption-box');
-            const header = document.getElementById('caption-header');
-            
-            let isDragging = false;
-            let startX, startY, initialX = 0, initialY = 0;
-            
-            header.addEventListener('touchstart', (e) => {
-                isDragging = true;
-                startX = e.touches[0].clientX - initialX;
-                startY = e.touches[0].clientY - initialY;
-                header.style.cursor = 'grabbing';
-            }, {passive: false});
-            
-            document.addEventListener('touchmove', (e) => {
-                if(!isDragging) return;
-                e.preventDefault();
-                initialX = e.touches[0].clientX - startX;
-                initialY = e.touches[0].clientY - startY;
-                box.style.transform = `translate3d(${initialX}px, ${initialY}px, 0)`;
-            }, {passive: false});
-            
-            document.addEventListener('touchend', () => {
-                isDragging = false;
-                header.style.cursor = 'grab';
-            });
-        }
+/* ================= XP SYSTEM ================= */
+function addXP(v){
+STATE.xp+=v;
+if(STATE.xp>STATE.level*10){
+STATE.level++;
+}
+saveMemory();
+updateUI();
+}
 
-        // Petting & Scolding
-        function setupInteractions() {
-            const petZone = document.getElementById('pet-zone');
-            const catStage = document.getElementById('cat-stage');
-            
-            let petInterval;
-            let longPressTimer;
-            
-            // Petting (mouse enter/move)
-            petZone.addEventListener('mouseenter', startPetting);
-            petZone.addEventListener('mouseleave', stopPetting);
-            
-            // Touch petting
-            petZone.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                startPetting();
-                
-                // Long press detection for scolding
-                longPressTimer = setTimeout(() => {
-                    stopPetting();
-                    scoldCat();
-                }, 800);
-            }, {passive: false});
-            
-            petZone.addEventListener('touchend', () => {
-                clearTimeout(longPressTimer);
-                stopPetting();
-            });
-            
-            // Scolding (long press mouse)
-            catStage.addEventListener('mousedown', () => {
-                longPressTimer = setTimeout(scoldCat, 1000);
-            });
-            
-            catStage.addEventListener('mouseup', () => clearTimeout(longPressTimer));
-            
-            function startPetting() {
-                if(STATE.emotion === 'angry') return;
-                catStage.classList.add('is-petting');
-                createHeart();
-                petInterval = setInterval(createHeart, 600);
-                speak("Purr... purr...", true);
-                updateEmotion('happy');
-            }
-            
-            function stopPetting() {
-                catStage.classList.remove('is-petting');
-                clearInterval(petInterval);
-            }
-            
-            function scoldCat() {
-                catStage.classList.remove('is-petting');
-                catStage.classList.add('is-angry');
-                
-                // Shock wave effect
-                const wave = document.createElement('div');
-                wave.className = 'shock-wave';
-                const rect = catStage.getBoundingClientRect();
-                wave.style.left = (rect.left + rect.width/2 - 50) + 'px';
-                wave.style.top = (rect.top + rect.height/2 - 50) + 'px';
-                document.body.appendChild(wave);
-                setTimeout(() => wave.remove(), 600);
-                
-                speak("Meow... why?", true);
-                updateEmotion('sad');
-                
-                setTimeout(() => {
-                    catStage.classList.remove('is-angry');
-                    updateEmotion('happy');
-                }, 3000);
-            }
-        }
+/* ================= EMOTIONS ================= */
+function emotion(e){
+document.body.className="";
+document.body.classList.add("emotion-"+e);
+STATE.mood=e;
+saveMemory();
+}
 
-        function createHeart() {
-            const catStage = document.getElementById('cat-stage');
-            const rect = catStage.getBoundingClientRect();
-            
-            const heart = document.createElement('div');
-            heart.className = 'heart-particle';
-            heart.innerHTML = '❤️';
-            heart.style.left = (rect.left + rect.width/2 + (Math.random()*60 - 30)) + 'px';
-            heart.style.top = (rect.top + rect.height/3) + 'px';
-            document.body.appendChild(heart);
-            
-            setTimeout(() => heart.remove(), 1500);
-        }
+/* ================= ACTIONS ================= */
+function pet(){
+emotion("happy");
+addXP(2);
+talk("I like that. You're gentle.","তুমি খুব আদুরে।");
+}
+function scold(){
+emotion("sulk");
+addXP(-1);
+talk("Hey… that hurt.","ওটা কষ্ট দিল।");
+}
 
-        // Virtual Space Actions
-        function performAction(action) {
-            const catStage = document.getElementById('cat-stage');
-            catStage.classList.remove('is-dancing', 'is-sleeping', 'is-eating', 'is-partying', 'is-petting');
-            document.body.classList.remove('env-party', 'env-sleep', 'env-eat', 'env-dance');
-            
-            const responses = {
-                dance: { en: "Let's dance! 🎵", bn: "চলো নাচি! 🎵", env: 'env-dance', anim: 'is-dancing' },
-                sleep: { en: "Goodnight... 😴", bn: "শুভ রাত্রি... 😴", env: 'env-sleep', anim: 'is-sleeping' },
-                eat: { en: "Yummy! 🐟", bn: "মজাদার! 🐟", env: 'env-eat', anim: 'is-eating' },
-                party: { en: "Party time! 🎉", bn: "পার্টি টাইম! 🎉", env: 'env-party', anim: 'is-partying' }
-            };
-            
-            const resp = responses[action];
-            catStage.classList.add(resp.anim);
-            document.body.classList.add(resp.env);
-            
-            if(STATE.device === 'mobile') {
-                updateCaption(resp.en, resp.bn);
-                speak(resp.bn);
-            } else {
-                updateCaption(resp.en);
-                speak(resp.en);
-            }
-            
-            // Create particles
-            createParticles(action);
-            
-            setTimeout(() => {
-                catStage.classList.remove(resp.anim);
-                document.body.classList.remove(resp.env);
-            }, 5000);
-        }
+/* ================= AI SPEECH (STATIC DEMO) ================= */
+function talk(en,bn){
+document.getElementById("aiText").innerText=en;
+document.getElementById("bnText").innerText=bn;
+speechSynthesis.cancel();
+let u=new SpeechSynthesisUtterance(en);
+u.lang="en-US";
+speechSynthesis.speak(u);
+}
 
-        function createParticles(type) {
-            const icons = {
-                dance: ['🎵', '🎶', '💃'],
-                sleep: ['💤', '🌙', '⭐'],
-                eat: ['🐟', '🍖', '😋'],
-                party: ['🎉', '🎊', '🎈', '✨']
-            };
-            
-            for(let i=0; i<5; i++) {
-                setTimeout(() => {
-                    const p = document.createElement('div');
-                    p.style.position = 'absolute';
-                    p.style.left = (45 + Math.random()*10) + '%';
-                    p.style.bottom = '30%';
-                    p.style.fontSize = (24 + Math.random()*16) + 'px';
-                    p.style.pointerEvents = 'none';
-                    p.style.animation = 'floatUp 2s ease-out forwards';
-                    p.textContent = icons[type][Math.floor(Math.random()*icons[type].length)];
-                    document.body.appendChild(p);
-                    setTimeout(() => p.remove(), 2000);
-                }, i*200);
-            }
-        }
+/* ================= FACE DETECTION ================= */
+function initFace(){
+const face=new FaceDetection({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${f}`});
+face.setOptions({minDetectionConfidence:.6});
+face.onResults(res=>{
+if(res.detections.length>0){
+emotion("shy");
+}else{
+emotion("sleep");
+}
+});
+new Camera(document.getElementById("camera"),{
+onFrame:async()=>{await face.send({image:camera});},
+width:320,height:240
+}).start();
+}
 
-        // AI Communication
-        async function callAI(text) {
-            // Check for action commands
-            const lowerText = text.toLowerCase();
-            if(['dance', 'sleep', 'eat', 'party'].some(a => lowerText.includes(a))) {
-                const action = ['dance', 'sleep', 'eat', 'party'].find(a => lowerText.includes(a));
-                performAction(action);
-                return;
-            }
-            
-            // Language switch
-            if(lowerText.includes('bangla') || lowerText.includes('bengali')) {
-                if(STATE.device === 'mobile') {
-                    STATE.mobileLang = 'bn-BD';
-                    speak("অবশ্যই! এখন থেকে বাংলায় কথা বলব।");
-                    updateCaption("Sure! I'll speak in Bengali now.", "অবশ্যই! এখন থেকে বাংলায় কথা বলব।");
-                    return;
-                }
-            }
-            
-            if(!STATE.config.key) {
-                toggleSidebar();
-                return;
-            }
-            
-            document.getElementById('ai-caption').textContent = "Thinking...";
-            
-            const prompt = STATE.device === 'mobile'
-                ? `You are a cute AI cat. Reply in English AND Bengali. Format: ENGLISH ||| BENGALI. Keep short. User: ${text}`
-                : `You are a cute AI cat. Reply in English only. Keep short. User: ${text}`;
-            
-            try {
-                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${STATE.config.key}`,
-                        "Content-Type": "application/json",
-                        "HTTP-Referer": window.location.href,
-                        "X-Title": "AI Cat"
-                    },
-                    body: JSON.stringify({
-                        model: STATE.config.model,
-                        messages: [{ role: 'user', content: prompt }],
-                        temperature: 0.8,
-                        max_tokens: 100
-                    })
-                });
-                
-                const data = await res.json();
-                const reply = data.choices[0].message.content;
-                
-                if(STATE.device === 'mobile' && reply.includes('|||')) {
-                    const parts = reply.split('|||');
-                    updateCaption(parts[0].trim(), parts[1].trim());
-                    speak(parts[1].trim());
-                } else {
-                    updateCaption(reply);
-                    speak(reply);
-                }
-            } catch(e) {
-                updateCaption("Meow! Error.", "মিউ! সমস্যা।");
-            }
-        }
+/* ================= INIT ================= */
+function updateUI(){
+document.getElementById("xp").innerText=STATE.xp;
+document.getElementById("lvl").innerText=STATE.level;
+}
+document.getElementById("personality").onchange=e=>{
+STATE.personality=e.target.value;
+talk("I feel different now.","আমার মন বদলে গেছে।");
+};
+updateUI();
+document.body.addEventListener("click",initFace,{once:true});
+</script>
 
-        function updateCaption(en, bn = null) {
-            document.getElementById('ai-caption').textContent = en;
-            if(bn) document.getElementById('translation-text').textContent = bn;
-        }
-
-        function updateEmotion(emotion) {
-            STATE.emotion = emotion;
-            const badge = document.getElementById('emotion-badge');
-            const emotions = {
-                happy: { text: 'Happy', class: 'bg-pink-100 text-pink-600' },
-                sad: { text: 'Sad', class: 'bg-blue-100 text-blue-600' },
-                angry: { text: 'Angry', class: 'bg-red-100 text-red-600' }
-            };
-            badge.textContent = emotions[emotion].text;
-            badge.className = `text-[9px] font-bold px-2 py-1 rounded-full ${emotions[emotion].class}`;
-            
-            // Apply to cat
-            const catStage = document.getElementById('cat-stage');
-            catStage.classList.remove('is-happy', 'is-sad', 'is-angry');
-            if(emotion !== 'happy') catStage.classList.add(`is-${emotion}`);
-        }
-
-        // Voice
-        const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const rec = Rec ? new Rec() : null;
-        
-        if(rec) {
-            rec.continuous = true;
-            rec.interimResults = false;
-            rec.lang = STATE.lang;
-            
-            rec.onstart = () => {
-                STATE.listening = true;
-                updateMicUI(true);
-            };
-            
-            rec.onresult = (e) => {
-                const text = e.results[e.results.length-1][0].transcript;
-                document.getElementById('user-transcript').textContent = text;
-                callAI(text);
-            };
-            
-            rec.onend = () => {
-                if(STATE.listening) setTimeout(() => rec.start(), 300);
-            };
-        }
-
-        function toggleMic() {
-            if(!rec) return alert("Voice not supported");
-            STATE.listening = !STATE.listening;
-            
-            if(STATE.listening) {
-                rec.lang = STATE.device === 'mobile' ? STATE.mobileLang : 'en-US';
-                rec.start();
-            } else {
-                rec.stop();
-                updateMicUI(false);
-            }
-        }
-
-        function updateMicUI(isListening) {
-            const icons = ['mic-icon', 'mic-icon-main'];
-            icons.forEach(id => {
-                const el = document.getElementById(id);
-                if(el) {
-                    el.className = isListening ? 'fas fa-microphone-slash' : 'fas fa-microphone';
-                }
-            });
-            
-            const btn = document.getElementById('mic-btn-main');
-            if(isListening) btn.classList.add('listening');
-            else btn.classList.remove('listening');
-        }
-
-        function speak(text, forceEnglish = false) {
-            STATE.speaking = true;
-            window.speechSynthesis.cancel();
-            
-            const utt = new SpeechSynthesisUtterance(text);
-            utt.lang = forceEnglish ? 'en-US' : (STATE.device === 'mobile' ? STATE.mobileLang : 'en-US');
-            utt.rate = 1.1;
-            utt.pitch = 1.2;
-            
-            document.body.classList.add('is-talking');
-            
-            utt.onend = () => {
-                STATE.speaking = false;
-                document.body.classList.remove('is-talking');
-            };
-            
-            window.speechSynthesis.speak(utt);
-        }
-
-        function sendText() {
-            const input = document.getElementById('text-input');
-            const text = input.value;
-            if(!text.trim()) return;
-            document.getElementById('user-transcript').textContent = text;
-            callAI(text);
-            input.value = '';
-        }
-
-        // UI
-        function toggleSidebar() {
-            const el = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            const isOpen = el.style.transform === 'translateX(0px)';
-            
-            el.style.transform = isOpen ? 'translateX(-100%)' : 'translateX(0px)';
-            overlay.style.display = isOpen ? 'none' : 'block';
-        }
-
-        function saveSettings() {
-            STATE.config.key = document.getElementById('api-key').value;
-            STATE.config.model = document.getElementById('model-profile').value;
-            
-            localStorage.setItem('cat_key', STATE.config.key);
-            localStorage.setItem('cat_model', STATE.config.model);
-            
-            toggleSidebar();
-            updateCaption("Settings saved!", "সেটিংস সংরক্ষিত!");
-        }
-
-        function setTheme(color) {
-            const themes = {
-                purple: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                blue: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                pink: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
-            };
-            document.body.style.background = themes[color];
-            localStorage.setItem('cat_theme', color);
-        }
-
-        function updateCatSize(size) {
-            const catStage = document.getElementById('cat-stage');
-            catStage.style.width = size + 'px';
-            catStage.style.height = size + 'px';
-        }
-
-        // Init
-        window.onload = () => {
-            document.getElementById('api-key').value = STATE.config.key;
-            document.getElementById('model-profile').value = STATE.config.model;
-            
-            setupInteractions();
-            
-            // Blink
-            setInterval(() => {
-                const eyes = document.getElementById('eyes');
-                eyes.classList.add('blink');
-                setTimeout(() => eyes.classList.remove('blink'), 150);
-            }, 4000);
-        };
-    </script>
 </body>
 </html>
