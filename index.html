@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Cat | Realistic Motion</title>
+    <title>AI Cat | Realistic Physics</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -16,59 +16,68 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { font-family: 'Inter', sans-serif; overflow: hidden; height: 100dvh; background-color: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; overflow: hidden; height: 100dvh; background-color: #f1f5f9; }
         
-        /* --- THE MOTION ENGINE --- */
-        #cat-wrapper {
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        /* --- PHYSICS ENGINE --- */
+        #cat-stage {
             transform-origin: bottom center;
-            animation: idle-sway 4s infinite ease-in-out;
+            animation: idle-breathing 4s infinite ease-in-out;
         }
 
-        /* Head movement */
-        #cat-head-group {
-            transform-origin: 100px 150px;
-            transition: transform 0.4s ease-out;
+        /* Pivot Point for Head */
+        #head-group {
+            transform-origin: 100px 140px; /* Pivots at the neck */
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* Talk Animations */
-        .is-talking #cat-head-group {
-            animation: talk-tilt 1.5s infinite ease-in-out;
+        /* Movement during Speech */
+        .is-talking #head-group {
+            animation: speech-tilt 1.2s infinite ease-in-out;
         }
 
-        /* Mood Specific Animations */
-        .mood-angry #cat-wrapper { animation: shake 0.1s infinite; }
-        .mood-excited #cat-wrapper { animation: bounce 0.4s infinite alternate ease-in-out; }
-        .mood-sad #cat-wrapper { transform: scale(0.9) translateY(10px); animation: none; }
-
-        @keyframes idle-sway {
-            0%, 100% { transform: rotate(-1deg) translateY(0); }
-            50% { transform: rotate(1deg) translateY(-5px); }
+        /* Ear Twitching while Listening */
+        .is-listening #ear-l, .is-listening #ear-r {
+            animation: ear-twitch 2s infinite;
         }
 
-        @keyframes talk-tilt {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(-4deg); }
-            75% { transform: rotate(4deg); }
+        /* Keyframes */
+        @keyframes idle-breathing {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.02) translateY(-5px); }
         }
 
-        @keyframes bounce {
-            from { transform: translateY(0); }
-            to { transform: translateY(-30px); }
+        @keyframes speech-tilt {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
         }
 
-        @keyframes shake {
+        @keyframes ear-twitch {
+            0%, 90% { transform: rotate(0); }
+            95% { transform: rotate(15deg); }
+        }
+
+        @keyframes jump {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-40px); }
+        }
+
+        @keyframes shiver {
             0% { transform: translate(1px, 1px); }
             50% { transform: translate(-1px, -1px); }
-            100% { transform: translate(1px, 1px); }
+            100% { transform: translate(1px, -1px); }
         }
 
-        /* Blinking & Mouth */
+        /* Mood Classes */
+        .mood-excited #cat-stage { animation: jump 0.5s infinite ease-in-out; }
+        .mood-angry #cat-stage { animation: shiver 0.1s infinite; }
+        .mood-sad #cat-stage { transform: scale(0.9) translateY(15px); opacity: 0.7; animation: none; }
+
+        /* Eye & Mouth */
         .eye-lid { transition: transform 0.1s; transform-origin: center; }
         .blink .eye-lid { transform: scaleY(0.1); }
-        #cat-mouth { transition: ry 0.1s ease; }
+        #mouth-path { transition: ry 0.1s; }
 
-        /* Draggable UI */
+        /* Draggable Box */
         #speech-bubble { position: absolute; z-index: 100; cursor: grab; }
         .caption-hidden { display: none; }
     </style>
@@ -79,53 +88,55 @@
         
         <aside id="sidebar" class="absolute lg:relative z-[200] w-72 h-full bg-white dark:bg-dark border-r border-gray-200 dark:border-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform">
             <div class="p-6 space-y-6">
-                <span class="font-black text-primary italic">REAL-MOTION CAT</span>
-                <input type="password" id="api-key" placeholder="OpenRouter Key" class="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-sm">
-                <input type="text" id="model-profile" placeholder="Model ID" class="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-sm">
-                <select id="voice-select" class="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-xs"></select>
-                <button onclick="saveSettings()" class="w-full bg-primary text-white py-3 rounded-xl font-bold">Save</button>
+                <p class="font-black text-primary text-xl">PRO CAT</p>
+                <div class="space-y-4">
+                    <input type="password" id="api-key" placeholder="OpenRouter API Key" class="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-sm">
+                    <input type="text" id="model-profile" placeholder="Model (e.g. google/gemini-flash-1.5-8b)" class="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-sm">
+                    <select id="voice-select" class="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-xs"></select>
+                </div>
+                <button onclick="saveSettings()" class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:brightness-110">Apply Settings</button>
             </div>
         </aside>
 
         <main class="flex-1 flex flex-col items-center justify-center relative">
             <header class="absolute top-0 w-full p-6 flex justify-between items-center z-50">
-                <button onclick="toggleSidebar()" class="p-2 text-gray-400"><i class="fas fa-bars"></i></button>
-                <button onclick="toggleCaptions()" class="px-4 py-2 bg-white dark:bg-gray-800 rounded-full shadow-sm text-[10px] font-bold uppercase tracking-widest"><i class="fas fa-eye mr-2"></i> Captions</button>
+                <button onclick="toggleSidebar()" class="p-2 text-gray-400 hover:text-primary"><i class="fas fa-sliders"></i></button>
+                <button onclick="toggleCaptions()" class="px-5 py-2 bg-white dark:bg-gray-800 rounded-full shadow-lg text-[10px] font-bold tracking-tighter uppercase"><i class="fas fa-closed-captioning mr-2"></i> Toggle UI</button>
             </header>
 
-            <div id="speech-bubble" style="left: 20px; top: 120px;" class="max-w-[280px]">
-                <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md p-6 rounded-[2.5rem] shadow-2xl border border-white/20">
-                    <div class="w-8 h-1 bg-gray-300 mx-auto mb-3 rounded-full opacity-50"></div>
-                    <p id="user-transcript" class="text-primary font-bold text-lg leading-tight mb-2"></p>
-                    <p id="ai-caption" class="text-gray-500 text-sm italic"></p>
+            <div id="speech-bubble" style="left: 40px; top: 150px;" class="max-w-[300px]">
+                <div class="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-2xl border border-white/20">
+                    <div class="w-10 h-1 bg-indigo-100 dark:bg-gray-700 mx-auto mb-4 rounded-full cursor-ns-resize"></div>
+                    <p id="user-transcript" class="text-primary font-extrabold text-xl leading-tight mb-2"></p>
+                    <p id="ai-caption" class="text-gray-500 dark:text-gray-400 text-sm italic font-medium"></p>
                 </div>
             </div>
 
-            <div id="cat-wrapper" class="relative">
-                <div id="glow" class="absolute inset-0 bg-primary/20 blur-[120px] rounded-full transition-all"></div>
+            <div id="cat-stage" class="relative">
+                <div id="glow" class="absolute inset-0 bg-primary/20 blur-[120px] rounded-full"></div>
                 
-                <svg viewBox="0 0 200 200" class="w-72 h-72 lg:w-[450px] lg:h-[450px]">
-                    <path d="M60 180 Q100 160 140 180 L150 200 L50 200 Z" fill="#4f46e5" />
+                <svg viewBox="0 0 200 200" class="w-72 h-72 lg:w-[480px] lg:h-[480px] drop-shadow-2xl">
+                    <path d="M50 190 Q100 165 150 190 L160 200 L40 200 Z" fill="#4f46e5" />
                     
-                    <g id="cat-head-group">
+                    <g id="head-group">
                         <path id="ear-l" d="M55 45 L35 10 L75 35 Z" fill="#4338ca" />
                         <path id="ear-r" d="M145 45 L165 10 L125 35 Z" fill="#4338ca" />
-                        <circle id="cat-head-base" cx="100" cy="100" r="80" fill="#6366f1" />
-                        <circle cx="100" cy="110" r="60" fill="#e0e7ff" />
+                        <circle id="head-base" cx="100" cy="100" r="80" fill="#6366f1" />
+                        <circle cx="100" cy="110" r="62" fill="#e0e7ff" />
                         <g id="eyes">
-                            <circle class="eye-lid" cx="80" cy="105" r="6" fill="#1e293b" />
-                            <circle class="eye-lid" cx="120" cy="105" r="6" fill="#1e293b" />
+                            <circle class="eye-lid" cx="78" cy="105" r="7" fill="#1e293b" />
+                            <circle class="eye-lid" cx="122" cy="105" r="7" fill="#1e293b" />
                         </g>
-                        <ellipse id="cat-mouth" cx="100" cy="135" rx="10" ry="1" fill="#1e293b" />
+                        <ellipse id="mouth-path" cx="100" cy="138" rx="12" ry="1" fill="#1e293b" />
                     </g>
                 </svg>
             </div>
 
             <div class="absolute bottom-10 flex flex-col items-center gap-4">
-                <button id="mic-btn" onclick="handleMicToggle()" class="w-20 h-20 rounded-full bg-white dark:bg-gray-800 shadow-2xl flex items-center justify-center text-2xl border-4 active:scale-90 transition-all">
+                <button id="mic-btn" onclick="handleMicToggle()" class="w-20 h-20 rounded-full bg-white dark:bg-gray-800 shadow-2xl flex items-center justify-center text-2xl border-4 border-indigo-50 active:scale-90 transition-all">
                     <i id="mic-icon" class="fas fa-microphone text-gray-300"></i>
                 </button>
-                <div id="status" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Offline</div>
+                <div id="status" class="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em]">Disconnected</div>
             </div>
         </main>
     </div>
@@ -133,40 +144,42 @@
     <script>
         const STATE = {
             isActive: false, isSpeaking: false, lang: 'bn-BD',
-            config: { key: localStorage.getItem('cat_key'), model: localStorage.getItem('cat_model') || 'google/gemini-flash-1.5-8b' }
+            config: { key: localStorage.getItem('cat_key') || '', model: localStorage.getItem('cat_model') || 'google/gemini-flash-1.5-8b' }
         };
 
         const MOODS = {
             happy: '#6366f1', excited: '#fbbf24', sad: '#64748b', angry: '#ef4444', thinking: '#a855f7'
         };
 
-        // Initialize
         window.onload = () => {
             setupRecognition();
             setupDraggable();
-            setInterval(blink, 4000);
-            window.speechSynthesis.onvoiceschanged = () => {
-                const voices = window.speechSynthesis.getVoices();
-                document.getElementById('voice-select').innerHTML = voices.map(v => `<option value="${v.name}">${v.name}</option>`).join('');
-            };
+            setInterval(blink, 4500);
+            window.speechSynthesis.onvoiceschanged = loadVoices;
             document.getElementById('api-key').value = STATE.config.key;
             document.getElementById('model-profile').value = STATE.config.model;
         };
 
+        function loadVoices() {
+            const voices = window.speechSynthesis.getVoices();
+            document.getElementById('voice-select').innerHTML = voices.map(v => `<option value="${v.name}">${v.name}</option>`).join('');
+        }
+
         function blink() {
-            document.getElementById('eyes').classList.add('blink');
-            setTimeout(() => document.getElementById('eyes').classList.remove('blink'), 150);
+            const eyes = document.getElementById('eyes');
+            eyes.classList.add('blink');
+            setTimeout(() => eyes.classList.remove('blink'), 140);
         }
 
         function updateMood(mood) {
             const color = MOODS[mood] || MOODS.happy;
-            document.getElementById('cat-wrapper').className = 'relative mood-' + mood;
-            document.getElementById('cat-head-base').setAttribute('fill', color);
+            document.getElementById('cat-stage').className = 'relative mood-' + mood;
+            document.getElementById('head-base').setAttribute('fill', color);
             document.getElementById('glow').style.backgroundColor = color;
         }
 
         async function processCommand(text) {
-            if (!STATE.config.key) return alert("Enter API Key in Sidebar");
+            if (!STATE.config.key) return alert("Please set API Key in sidebar.");
             updateMood('thinking');
             
             try {
@@ -175,7 +188,7 @@
                     headers: { "Authorization": `Bearer ${STATE.config.key}`, "Content-Type": "application/json" },
                     body: JSON.stringify({
                         model: STATE.config.model,
-                        messages: [{ role: 'system', content: 'You are a cat. Start with [HAPPY], [SAD], [EXCITED], [ANGRY], or [THINKING]. 1 sentence only.' }, { role: 'user', content: text }]
+                        messages: [{ role: 'system', content: 'You are a lively cat. Start with mood tag [HAPPY], [SAD], [EXCITED], [ANGRY], or [THINKING]. Max 1 short sentence.' }, { role: 'user', content: text }]
                     })
                 });
                 const data = await res.json();
@@ -186,21 +199,21 @@
                 document.getElementById('ai-caption').innerText = clean;
                 updateMood(mood);
                 speak(clean);
-            } catch (e) { stopMic(); }
+            } catch (e) { resetMic(); }
         }
 
         function speak(text) {
             STATE.isSpeaking = true;
-            document.body.classList.add('is-talking');
-            const mouth = document.getElementById('cat-mouth');
-            const mInt = setInterval(() => mouth.setAttribute('ry', Math.random() * 8 + 1), 80);
+            document.getElementById('app').classList.add('is-talking');
+            const mouth = document.getElementById('mouth-path');
+            const interval = setInterval(() => mouth.setAttribute('ry', Math.random() * 9 + 1), 70);
             
             const ut = new SpeechSynthesisUtterance(text);
             ut.lang = STATE.lang;
             ut.onend = () => {
                 STATE.isSpeaking = false;
-                document.body.classList.remove('is-talking');
-                clearInterval(mInt);
+                document.getElementById('app').classList.remove('is-talking');
+                clearInterval(interval);
                 mouth.setAttribute('ry', '1');
                 if (STATE.isActive) startMic();
             };
@@ -216,6 +229,47 @@
                 document.getElementById('user-transcript').innerText = result;
                 processCommand(result);
             };
+            STATE.recognition.onend = () => { if(STATE.isActive && !STATE.isSpeaking) startMic(); };
         }
 
-        function handleMicToggle() { STATE.isActive = !STATE.isActive; STATE.isActive ? startMic() : stop
+        function handleMicToggle() { STATE.isActive = !STATE.isActive; STATE.isActive ? startMic() : resetMic(); }
+        function startMic() { 
+            try { STATE.recognition.start(); } catch(e){}
+            document.getElementById('mic-icon').className = "fas fa-spinner fa-spin text-primary";
+            document.getElementById('status').innerText = "Listening...";
+            document.getElementById('app').classList.add('is-listening');
+        }
+        function resetMic() { 
+            STATE.recognition.stop(); 
+            document.getElementById('mic-icon').className = "fas fa-microphone text-gray-300";
+            document.getElementById('status').innerText = "Disconnected";
+            document.getElementById('app').classList.remove('is-listening');
+        }
+
+        function setupDraggable() {
+            const bubble = document.getElementById('speech-bubble');
+            let ox, oy;
+            bubble.onmousedown = (e) => {
+                ox = e.clientX - bubble.offsetLeft; oy = e.clientY - bubble.offsetTop;
+                document.onmousemove = (e) => {
+                    bubble.style.left = (e.clientX - ox) + 'px';
+                    bubble.style.top = (e.clientY - oy) + 'px';
+                };
+                document.onmouseup = () => document.onmousemove = null;
+            };
+        }
+
+        function saveSettings() {
+            STATE.config.key = document.getElementById('api-key').value;
+            STATE.config.model = document.getElementById('model-profile').value;
+            localStorage.setItem('cat_key', STATE.config.key);
+            localStorage.setItem('cat_model', STATE.config.model);
+            toggleSidebar();
+            alert("Settings saved!");
+        }
+
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); }
+        function toggleCaptions() { document.getElementById('speech-bubble').classList.toggle('caption-hidden'); }
+    </script>
+</body>
+</html>
