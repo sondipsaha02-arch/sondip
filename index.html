@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Cat | Realistic Physics</title>
+    <title>AI Cat | Mobile & Desktop Physics</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -16,69 +16,74 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { font-family: 'Inter', sans-serif; overflow: hidden; height: 100dvh; background-color: #f1f5f9; }
-        
-        /* --- PHYSICS ENGINE --- */
+        /* Mobile Optimizations */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+            height: 100dvh; 
+            background: radial-gradient(circle at center, #f8fafc 0%, #e2e8f0 100%);
+            touch-action: manipulation;
+        }
+
+        /* --- THE MOTION ENGINE (GPU Accelerated) --- */
         #cat-stage {
             transform-origin: bottom center;
-            animation: idle-breathing 4s infinite ease-in-out;
+            will-change: transform;
+            animation: idle-breathe 4s infinite ease-in-out;
         }
 
-        /* Pivot Point for Head */
         #head-group {
-            transform-origin: 100px 140px; /* Pivots at the neck */
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: 100px 145px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
         }
 
-        /* Movement during Speech */
+        /* Talk Animation */
         .is-talking #head-group {
-            animation: speech-tilt 1.2s infinite ease-in-out;
+            animation: talk-tilt 1.5s infinite ease-in-out;
         }
 
-        /* Ear Twitching while Listening */
+        /* Listening Animation */
         .is-listening #ear-l, .is-listening #ear-r {
-            animation: ear-twitch 2s infinite;
+            animation: twitch 2.5s infinite;
         }
 
-        /* Keyframes */
-        @keyframes idle-breathing {
+        @keyframes idle-breathe {
             0%, 100% { transform: scale(1) translateY(0); }
-            50% { transform: scale(1.02) translateY(-5px); }
+            50% { transform: scale(1.01) translateY(-8px); }
         }
 
-        @keyframes speech-tilt {
-            0%, 100% { transform: rotate(-5deg); }
-            50% { transform: rotate(5deg); }
+        @keyframes talk-tilt {
+            0%, 100% { transform: rotate(-6deg); }
+            50% { transform: rotate(6deg); }
         }
 
-        @keyframes ear-twitch {
-            0%, 90% { transform: rotate(0); }
-            95% { transform: rotate(15deg); }
+        @keyframes twitch {
+            0%, 92%, 100% { transform: rotate(0); }
+            95% { transform: rotate(12deg); }
         }
 
-        @keyframes jump {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-40px); }
-        }
+        /* Mood Physics */
+        .mood-excited #cat-stage { animation: bounce 0.4s infinite alternate; }
+        .mood-angry #cat-stage { animation: vibrate 0.1s infinite; }
+        .mood-sad #cat-stage { transform: scale(0.9) translateY(20px); filter: grayscale(0.5); }
 
-        @keyframes shiver {
-            0% { transform: translate(1px, 1px); }
-            50% { transform: translate(-1px, -1px); }
-            100% { transform: translate(1px, -1px); }
-        }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-35px); } }
+        @keyframes vibrate { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } }
 
-        /* Mood Classes */
-        .mood-excited #cat-stage { animation: jump 0.5s infinite ease-in-out; }
-        .mood-angry #cat-stage { animation: shiver 0.1s infinite; }
-        .mood-sad #cat-stage { transform: scale(0.9) translateY(15px); opacity: 0.7; animation: none; }
-
-        /* Eye & Mouth */
-        .eye-lid { transition: transform 0.1s; transform-origin: center; }
+        /* Eye Blinking */
+        .eye-lid { transform-origin: center; transition: transform 0.1s; }
         .blink .eye-lid { transform: scaleY(0.1); }
-        #mouth-path { transition: ry 0.1s; }
 
-        /* Draggable Box */
-        #speech-bubble { position: absolute; z-index: 100; cursor: grab; }
+        /* Draggable Box Fixes for Mobile */
+        #speech-bubble { 
+            position: absolute; 
+            z-index: 100; 
+            touch-action: none; /* Prevents scrolling while dragging */
+            user-select: none;
+            width: 85vw;
+            max-width: 320px;
+        }
         .caption-hidden { display: none; }
     </style>
 </head>
@@ -86,37 +91,39 @@
 
     <div id="app" class="flex h-full relative overflow-hidden">
         
-        <aside id="sidebar" class="absolute lg:relative z-[200] w-72 h-full bg-white dark:bg-dark border-r border-gray-200 dark:border-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform">
-            <div class="p-6 space-y-6">
-                <p class="font-black text-primary text-xl">PRO CAT</p>
-                <div class="space-y-4">
-                    <input type="password" id="api-key" placeholder="OpenRouter API Key" class="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-sm">
-                    <input type="text" id="model-profile" placeholder="Model (e.g. google/gemini-flash-1.5-8b)" class="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-sm">
-                    <select id="voice-select" class="w-full p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-xs"></select>
+        <aside id="sidebar" class="absolute lg:relative z-[200] w-72 h-full bg-white/95 dark:bg-dark/95 backdrop-blur-md border-r border-gray-200 dark:border-gray-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+            <div class="p-6 space-y-5">
+                <div class="flex justify-between items-center">
+                    <span class="font-black text-primary italic text-xl">CAT CORE</span>
+                    <button onclick="toggleSidebar()" class="lg:hidden text-gray-400"><i class="fas fa-times"></i></button>
                 </div>
-                <button onclick="saveSettings()" class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:brightness-110">Apply Settings</button>
+                <input type="password" id="api-key" placeholder="OpenRouter API Key" class="w-full p-3 rounded-2xl bg-gray-100 dark:bg-gray-800 border-none text-sm">
+                <input type="text" id="model-profile" placeholder="Model ID (e.g. google/gemini-2.0-flash-exp:free)" class="w-full p-3 rounded-2xl bg-gray-100 dark:bg-gray-800 border-none text-sm">
+                <select id="voice-select" class="w-full p-3 rounded-2xl bg-gray-100 dark:bg-gray-800 border-none text-xs"></select>
+                <button onclick="saveSettings()" class="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-lg shadow-primary/30">Apply & Close</button>
             </div>
         </aside>
 
-        <main class="flex-1 flex flex-col items-center justify-center relative">
+        <main class="flex-1 flex flex-col items-center justify-center relative p-4">
+            
             <header class="absolute top-0 w-full p-6 flex justify-between items-center z-50">
-                <button onclick="toggleSidebar()" class="p-2 text-gray-400 hover:text-primary"><i class="fas fa-sliders"></i></button>
-                <button onclick="toggleCaptions()" class="px-5 py-2 bg-white dark:bg-gray-800 rounded-full shadow-lg text-[10px] font-bold tracking-tighter uppercase"><i class="fas fa-closed-captioning mr-2"></i> Toggle UI</button>
+                <button onclick="toggleSidebar()" class="w-10 h-10 rounded-full bg-white/50 dark:bg-gray-800/50 flex items-center justify-center"><i class="fas fa-cog"></i></button>
+                <button onclick="toggleCaptions()" class="px-4 py-2 bg-white/80 dark:bg-gray-800/80 rounded-full shadow-sm text-[10px] font-bold"><i class="fas fa-eye mr-2"></i> UI</button>
             </header>
 
-            <div id="speech-bubble" style="left: 40px; top: 150px;" class="max-w-[300px]">
-                <div class="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl p-6 rounded-[2.5rem] shadow-2xl border border-white/20">
-                    <div class="w-10 h-1 bg-indigo-100 dark:bg-gray-700 mx-auto mb-4 rounded-full cursor-ns-resize"></div>
-                    <p id="user-transcript" class="text-primary font-extrabold text-xl leading-tight mb-2"></p>
+            <div id="speech-bubble" style="left: 10px; top: 80px;">
+                <div class="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl p-5 rounded-[2rem] shadow-2xl border border-white/20">
+                    <div id="drag-handle" class="w-12 h-1.5 bg-gray-200 dark:bg-gray-700 mx-auto mb-3 rounded-full cursor-move"></div>
+                    <p id="user-transcript" class="text-primary font-bold text-lg leading-tight mb-1 min-h-[1.5rem]"></p>
                     <p id="ai-caption" class="text-gray-500 dark:text-gray-400 text-sm italic font-medium"></p>
                 </div>
             </div>
 
-            <div id="cat-stage" class="relative">
-                <div id="glow" class="absolute inset-0 bg-primary/20 blur-[120px] rounded-full"></div>
+            <div id="cat-stage" class="relative pointer-events-none">
+                <div id="glow" class="absolute inset-0 bg-primary/20 blur-[100px] rounded-full"></div>
                 
-                <svg viewBox="0 0 200 200" class="w-72 h-72 lg:w-[480px] lg:h-[480px] drop-shadow-2xl">
-                    <path d="M50 190 Q100 165 150 190 L160 200 L40 200 Z" fill="#4f46e5" />
+                <svg viewBox="0 0 200 200" class="w-64 h-64 sm:w-80 sm:h-80 lg:w-[480px] lg:h-[480px]">
+                    <path d="M40 190 Q100 160 160 190 L170 200 L30 200 Z" fill="#4f46e5" />
                     
                     <g id="head-group">
                         <path id="ear-l" d="M55 45 L35 10 L75 35 Z" fill="#4338ca" />
@@ -132,11 +139,11 @@
                 </svg>
             </div>
 
-            <div class="absolute bottom-10 flex flex-col items-center gap-4">
-                <button id="mic-btn" onclick="handleMicToggle()" class="w-20 h-20 rounded-full bg-white dark:bg-gray-800 shadow-2xl flex items-center justify-center text-2xl border-4 border-indigo-50 active:scale-90 transition-all">
+            <div class="absolute bottom-8 flex flex-col items-center gap-4 w-full">
+                <button id="mic-btn" onclick="handleMicToggle()" class="w-20 h-20 rounded-full bg-white dark:bg-gray-800 shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex items-center justify-center text-2xl border-4 border-white active:scale-90 transition-all">
                     <i id="mic-icon" class="fas fa-microphone text-gray-300"></i>
                 </button>
-                <div id="status" class="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em]">Disconnected</div>
+                <div id="status" class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Tap to start</div>
             </div>
         </main>
     </div>
@@ -147,28 +154,95 @@
             config: { key: localStorage.getItem('cat_key') || '', model: localStorage.getItem('cat_model') || 'google/gemini-flash-1.5-8b' }
         };
 
-        const MOODS = {
-            happy: '#6366f1', excited: '#fbbf24', sad: '#64748b', angry: '#ef4444', thinking: '#a855f7'
-        };
+        const MOODS = { happy: '#6366f1', excited: '#fbbf24', sad: '#64748b', angry: '#ef4444', thinking: '#a855f7' };
 
         window.onload = () => {
             setupRecognition();
-            setupDraggable();
-            setInterval(blink, 4500);
-            window.speechSynthesis.onvoiceschanged = loadVoices;
+            setupDraggable(document.getElementById('speech-bubble'));
+            setInterval(blink, 4000);
+            window.speechSynthesis.onvoiceschanged = () => {
+                const voices = window.speechSynthesis.getVoices();
+                document.getElementById('voice-select').innerHTML = voices.map(v => `<option value="${v.name}">${v.name}</option>`).join('');
+            };
             document.getElementById('api-key').value = STATE.config.key;
             document.getElementById('model-profile').value = STATE.config.model;
         };
 
-        function loadVoices() {
-            const voices = window.speechSynthesis.getVoices();
-            document.getElementById('voice-select').innerHTML = voices.map(v => `<option value="${v.name}">${v.name}</option>`).join('');
-        }
-
         function blink() {
             const eyes = document.getElementById('eyes');
             eyes.classList.add('blink');
-            setTimeout(() => eyes.classList.remove('blink'), 140);
+            setTimeout(() => eyes.classList.remove('blink'), 150);
+        }
+
+        // --- MOBILE FRIENDLY DRAGGABLE ---
+        function setupDraggable(el) {
+            let posX = 0, posY = 0, initialX, initialY;
+
+            const dragStart = (e) => {
+                initialX = (e.type === "touchstart") ? e.touches[0].clientX - posX : e.clientX - posX;
+                initialY = (e.type === "touchstart") ? e.touches[0].clientY - posY : e.clientY - posY;
+                if (e.target === document.getElementById('drag-handle') || e.target === el) {
+                    document.addEventListener("mousemove", drag);
+                    document.addEventListener("touchmove", drag, { passive: false });
+                    document.addEventListener("mouseup", dragEnd);
+                    document.addEventListener("touchend", dragEnd);
+                }
+            };
+
+            const drag = (e) => {
+                e.preventDefault();
+                posX = (e.type === "touchmove") ? e.touches[0].clientX - initialX : e.clientX - initialX;
+                posY = (e.type === "touchmove") ? e.touches[0].clientY - initialY : e.clientY - initialY;
+                el.style.transform = `translate3d(${posX}px, ${posY}px, 0)`;
+            };
+
+            const dragEnd = () => {
+                document.removeEventListener("mousemove", drag);
+                document.removeEventListener("touchmove", drag);
+            };
+
+            el.addEventListener("mousedown", dragStart);
+            el.addEventListener("touchstart", dragStart, { passive: false });
+        }
+
+        async function processCommand(text) {
+            if (!STATE.config.key) return alert("API Key missing!");
+            updateMood('thinking');
+            try {
+                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${STATE.config.key}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        model: STATE.config.model,
+                        messages: [{ role: 'system', content: 'You are a cat. Use mood tag [HAPPY], [SAD], [EXCITED], [ANGRY], or [THINKING]. 1 short sentence.' }, { role: 'user', content: text }]
+                    })
+                });
+                const data = await res.json();
+                const raw = data.choices[0].message.content;
+                const mood = (raw.match(/\[(.*?)\]/) || [null, 'happy'])[1].toLowerCase();
+                const clean = raw.replace(/\[.*?\]/, '').trim();
+                document.getElementById('ai-caption').innerText = clean;
+                updateMood(mood);
+                speak(clean);
+            } catch (e) { stopMic(); }
+        }
+
+        function speak(text) {
+            STATE.isSpeaking = true;
+            document.getElementById('app').classList.add('is-talking');
+            const mouth = document.getElementById('mouth-path');
+            const mInt = setInterval(() => mouth.setAttribute('ry', Math.random() * 10 + 1), 80);
+            
+            const ut = new SpeechSynthesisUtterance(text);
+            ut.lang = STATE.lang;
+            ut.onend = () => {
+                STATE.isSpeaking = false;
+                document.getElementById('app').classList.remove('is-talking');
+                clearInterval(mInt);
+                mouth.setAttribute('ry', '1');
+                if (STATE.isActive) startMic();
+            };
+            window.speechSynthesis.speak(ut);
         }
 
         function updateMood(mood) {
@@ -178,85 +252,36 @@
             document.getElementById('glow').style.backgroundColor = color;
         }
 
-        async function processCommand(text) {
-            if (!STATE.config.key) return alert("Please set API Key in sidebar.");
-            updateMood('thinking');
-            
-            try {
-                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                    method: "POST",
-                    headers: { "Authorization": `Bearer ${STATE.config.key}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        model: STATE.config.model,
-                        messages: [{ role: 'system', content: 'You are a lively cat. Start with mood tag [HAPPY], [SAD], [EXCITED], [ANGRY], or [THINKING]. Max 1 short sentence.' }, { role: 'user', content: text }]
-                    })
-                });
-                const data = await res.json();
-                const raw = data.choices[0].message.content;
-                const mood = (raw.match(/\[(.*?)\]/) || [null, 'happy'])[1].toLowerCase();
-                const clean = raw.replace(/\[.*?\]/, '').trim();
-                
-                document.getElementById('ai-caption').innerText = clean;
-                updateMood(mood);
-                speak(clean);
-            } catch (e) { resetMic(); }
-        }
-
-        function speak(text) {
-            STATE.isSpeaking = true;
-            document.getElementById('app').classList.add('is-talking');
-            const mouth = document.getElementById('mouth-path');
-            const interval = setInterval(() => mouth.setAttribute('ry', Math.random() * 9 + 1), 70);
-            
-            const ut = new SpeechSynthesisUtterance(text);
-            ut.lang = STATE.lang;
-            ut.onend = () => {
-                STATE.isSpeaking = false;
-                document.getElementById('app').classList.remove('is-talking');
-                clearInterval(interval);
-                mouth.setAttribute('ry', '1');
-                if (STATE.isActive) startMic();
-            };
-            window.speechSynthesis.speak(ut);
-        }
-
         function setupRecognition() {
             const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!Rec) return alert("Your browser doesn't support Voice Rec.");
             STATE.recognition = new Rec();
             STATE.recognition.continuous = true;
             STATE.recognition.onresult = (e) => {
-                const result = e.results[e.results.length - 1][0].transcript;
-                document.getElementById('user-transcript').innerText = result;
-                processCommand(result);
+                const res = e.results[e.results.length - 1][0].transcript;
+                document.getElementById('user-transcript').innerText = res;
+                processCommand(res);
             };
-            STATE.recognition.onend = () => { if(STATE.isActive && !STATE.isSpeaking) startMic(); };
         }
 
-        function handleMicToggle() { STATE.isActive = !STATE.isActive; STATE.isActive ? startMic() : resetMic(); }
-        function startMic() { 
-            try { STATE.recognition.start(); } catch(e){}
+        function handleMicToggle() { 
+            if (!STATE.isActive) startMic(); else stopMic();
+        }
+
+        function startMic() {
+            STATE.isActive = true;
+            try { STATE.recognition.start(); } catch(e) {}
             document.getElementById('mic-icon').className = "fas fa-spinner fa-spin text-primary";
             document.getElementById('status').innerText = "Listening...";
             document.getElementById('app').classList.add('is-listening');
         }
-        function resetMic() { 
-            STATE.recognition.stop(); 
-            document.getElementById('mic-icon').className = "fas fa-microphone text-gray-300";
-            document.getElementById('status').innerText = "Disconnected";
-            document.getElementById('app').classList.remove('is-listening');
-        }
 
-        function setupDraggable() {
-            const bubble = document.getElementById('speech-bubble');
-            let ox, oy;
-            bubble.onmousedown = (e) => {
-                ox = e.clientX - bubble.offsetLeft; oy = e.clientY - bubble.offsetTop;
-                document.onmousemove = (e) => {
-                    bubble.style.left = (e.clientX - ox) + 'px';
-                    bubble.style.top = (e.clientY - oy) + 'px';
-                };
-                document.onmouseup = () => document.onmousemove = null;
-            };
+        function stopMic() {
+            STATE.isActive = false;
+            STATE.recognition.stop();
+            document.getElementById('mic-icon').className = "fas fa-microphone text-gray-300";
+            document.getElementById('status').innerText = "Tap to start";
+            document.getElementById('app').classList.remove('is-listening');
         }
 
         function saveSettings() {
@@ -265,7 +290,6 @@
             localStorage.setItem('cat_key', STATE.config.key);
             localStorage.setItem('cat_model', STATE.config.model);
             toggleSidebar();
-            alert("Settings saved!");
         }
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); }
