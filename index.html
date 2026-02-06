@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Cat | Smart Voice Switch</title>
+    <title>AI Cat | English with Bangla Subs</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; overflow: hidden; height: 100dvh; background: #f8fafc; touch-action: none; }
-        #sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; }
+        body { font-family: 'Inter', sans-serif; overflow: hidden; height: 100dvh; background: #f0f4f8; touch-action: none; }
+        #sidebar { transition: transform 0.3s ease; z-index: 1000; }
         #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 900; }
-        #cat-stage { transform-origin: bottom center; cursor: pointer; }
+        
+        #cat-stage { transform-origin: bottom center; }
         .is-talking #head-group { animation: wobble 0.5s infinite alternate; }
-        @keyframes wobble { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+        @keyframes wobble { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+        
         .eye-lid { transform-origin: center; transition: transform 0.1s; }
         .blink .eye-lid { transform: scaleY(0.1); }
-        #speech-bubble { position: absolute; z-index: 100; width: 85vw; max-width: 320px; touch-action: none; }
+        
+        #speech-bubble { position: absolute; z-index: 100; width: 85vw; max-width: 350px; touch-action: none; }
+        .translation-text { color: #6366f1; font-weight: 600; border-top: 1px dashed #e2e8f0; margin-top: 8px; padding-top: 8px; font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -24,41 +28,44 @@
 
     <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl transform -translate-x-full">
         <div class="p-6 h-full flex flex-col">
-            <h2 class="text-xl font-black text-indigo-600 mb-8 italic">SETTINGS</h2>
+            <h2 class="text-xl font-black text-indigo-600 mb-8 italic">CAT SETTINGS</h2>
             <div class="space-y-6 flex-1">
                 <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">OpenRouter API Key</label>
-                    <input type="password" id="api-key" placeholder="sk-or-..." class="w-full mt-2 p-3 bg-gray-100 rounded-xl border-none text-sm outline-none">
+                    <input type="password" id="api-key" placeholder="sk-or-..." class="w-full mt-2 p-3 bg-gray-100 rounded-xl border-none text-sm outline-none focus:ring-2 ring-indigo-500">
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Model ID</label>
-                    <input type="text" id="model-profile" value="google/gemini-2.0-flash-exp:free" class="w-full mt-2 p-3 bg-gray-100 rounded-xl border-none text-sm outline-none">
+                    <input type="text" id="model-profile" value="google/gemini-2.0-flash-exp:free" class="w-full mt-2 p-3 bg-gray-100 rounded-xl border-none text-sm outline-none focus:ring-2 ring-indigo-500">
                 </div>
-                <div class="p-3 bg-indigo-50 rounded-xl border border-indigo-100">
-                    <p class="text-[10px] text-indigo-700 font-bold uppercase mb-1">Voice Commands:</p>
-                    <p class="text-[11px] text-indigo-600 italic">"Talk in English" → Switches to EN</p>
-                    <p class="text-[11px] text-indigo-600 italic">"বাংলায় কথা বলো" → Switches to BN</p>
+                <div class="bg-blue-50 p-4 rounded-xl">
+                    <p class="text-[11px] text-blue-700 leading-tight font-medium">✨ <b>Mode:</b> English Voice + Bangla Subtitles enabled.</p>
                 </div>
             </div>
-            <button onclick="saveSettings()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg">Save Config</button>
+            <button onclick="saveSettings()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold active:scale-95 transition-all">Save & Start</button>
         </div>
     </aside>
 
     <main class="flex flex-col h-full relative">
-        <header class="p-4 flex gap-2 items-center pointer-events-none">
-            <button onclick="toggleSidebar()" class="pointer-events-auto w-10 h-10 bg-white rounded-xl shadow text-indigo-600"><i class="fas fa-cog"></i></button>
-            <div class="pointer-events-auto flex-1 bg-white/90 rounded-xl shadow p-1 flex items-center h-10">
-                <input type="text" id="text-input" placeholder="Say 'Switch to English'..." class="flex-1 bg-transparent px-3 text-sm outline-none border-none" onkeydown="if(event.key==='Enter') sendText()">
+        <header class="p-4 flex gap-2 items-center z-50">
+            <button onclick="toggleSidebar()" class="w-10 h-10 bg-white rounded-xl shadow-md text-indigo-600 flex items-center justify-center">
+                <i class="fas fa-cog"></i>
+            </button>
+            <div class="flex-1 bg-white/80 backdrop-blur rounded-xl shadow-md p-1 flex items-center h-10 border border-white">
+                <input type="text" id="text-input" placeholder="Type in any language..." class="flex-1 bg-transparent px-3 text-sm outline-none" onkeydown="if(event.key==='Enter') sendText()">
                 <button onclick="sendText()" class="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center"><i class="fas fa-paper-plane text-[10px]"></i></button>
             </div>
         </header>
 
         <div class="flex-1 flex flex-col items-center justify-center relative">
             <div id="speech-bubble" style="left: 20px; top: 80px;">
-                <div class="bg-white/90 p-5 rounded-[2rem] shadow-xl border border-white">
+                <div class="bg-white/90 backdrop-blur-md p-5 rounded-[2rem] shadow-2xl border border-white relative">
                     <div id="drag-handle" class="w-10 h-1 bg-gray-200 mx-auto mb-3 rounded-full cursor-move"></div>
-                    <p id="user-transcript" class="text-indigo-600 font-bold text-base min-h-[1.2rem]"></p>
-                    <p id="ai-caption" class="text-gray-500 text-sm italic font-medium">Hello! Ready to chat.</p>
+                    <p id="user-transcript" class="text-gray-400 text-xs font-bold mb-2 italic"></p>
+                    <div id="ai-response-container">
+                        <p id="ai-caption-en" class="text-indigo-900 font-bold text-lg leading-tight"></p>
+                        <p id="ai-caption-bn" class="translation-text"></p>
+                    </div>
                 </div>
             </div>
 
@@ -77,13 +84,11 @@
                 </svg>
             </div>
 
-            <div class="absolute bottom-10 flex flex-col items-center gap-2">
-                <button id="mic-btn" onclick="toggleMic()" class="w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center text-xl active:scale-90 transition-transform">
+            <div class="absolute bottom-10 flex flex-col items-center gap-3">
+                <button id="mic-btn" onclick="toggleMic()" class="w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center text-xl active:scale-90 transition-all">
                     <i id="mic-icon" class="fas fa-microphone text-gray-300"></i>
                 </button>
-                <div class="flex gap-2">
-                    <span id="lang-tag" class="text-[9px] font-bold px-2 py-0.5 bg-indigo-100 text-indigo-600 rounded-full uppercase tracking-tighter">BN-BD</span>
-                </div>
+                <div class="px-3 py-1 bg-indigo-600 text-white rounded-full text-[9px] font-bold tracking-widest">ENGLISH VOICE + BN SUBS</div>
             </div>
         </div>
     </main>
@@ -92,51 +97,22 @@
         const STATE = {
             listening: false,
             speaking: false,
-            lang: localStorage.getItem('cat_lang') || 'bn-BD',
             config: { 
                 key: localStorage.getItem('cat_key') || '', 
                 model: localStorage.getItem('cat_model') || 'google/gemini-2.0-flash-exp:free' 
             }
         };
 
-        // --- SMART LANGUAGE SWITCHER ---
-        function checkLanguageSwitch(text) {
-            const input = text.toLowerCase();
-            const enCommands = ["talk with me in english", "switch to english", "talk in english", "speak english"];
-            const bnCommands = ["বাংলায় কথা বলো", "বাংলায় বল", "switch to bengali", "কথা বল বাংলায়"];
-
-            if (enCommands.some(cmd => input.includes(cmd))) {
-                setLanguage('en-US');
-                return "Sure! I will talk with you in English from now on. Meow!";
-            }
-            if (bnCommands.some(cmd => input.includes(cmd))) {
-                setLanguage('bn-BD');
-                return "অবশ্যই! এখন থেকে আমি আপনার সাথে বাংলায় কথা বলব। মিউ!";
-            }
-            return null;
-        }
-
-        function setLanguage(newLang) {
-            STATE.lang = newLang;
-            localStorage.setItem('cat_lang', newLang);
-            document.getElementById('lang-tag').innerText = newLang.toUpperCase();
-            if(rec) rec.lang = newLang;
-        }
-
-        // --- AI & SPEECH ---
+        // --- AI LOGIC (DUAL OUTPUT) ---
         async function callAI(text) {
-            // Check for voice command first
-            const switchResponse = checkLanguageSwitch(text);
-            if (switchResponse) {
-                document.getElementById('ai-caption').innerText = switchResponse;
-                speak(switchResponse);
-                return;
-            }
-
-            if (!STATE.config.key) return alert("API Key setup required!");
+            if (!STATE.config.key) return alert("Setup API Key!");
             updateUI('THINKING');
             
-            const prompt = STATE.lang === 'bn-BD' ? "You are a cat. Answer in Bengali. Very short." : "You are a cat. Answer in English. Very short.";
+            // System prompt to force JSON-like structure or specific format
+            const prompt = `You are a cat. Respond to the user's message. 
+            Format: [English sentence] | [Bangla Translation]
+            Example: Hello there! | ওহে ওখানে!
+            Keep it very short and cute.`;
 
             try {
                 const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -148,17 +124,29 @@
                     })
                 });
                 const data = await res.json();
-                const reply = data.choices[0].message.content;
-                document.getElementById('ai-caption').innerText = reply;
-                speak(reply);
-            } catch (e) { updateUI('STANDBY'); }
+                const rawReply = data.choices[0].message.content;
+                
+                // Split English and Bangla
+                const parts = rawReply.split('|');
+                const englishText = parts[0]?.trim() || "Meow!";
+                const banglaText = parts[1]?.trim() || "(অনুবাদ পাওয়া যায়নি)";
+
+                document.getElementById('ai-caption-en').innerText = englishText;
+                document.getElementById('ai-caption-bn').innerText = banglaText;
+                
+                speak(englishText); // Only speak English
+            } catch (e) { 
+                updateUI('STANDBY');
+                document.getElementById('ai-caption-en').innerText = "Error...";
+            }
         }
 
         function speak(text) {
             STATE.speaking = true;
             window.speechSynthesis.cancel();
             const ut = new SpeechSynthesisUtterance(text);
-            ut.lang = STATE.lang;
+            ut.lang = 'en-US'; // Always English voice
+            
             const mouth = document.getElementById('mouth-path');
             const anim = setInterval(() => mouth.setAttribute('ry', Math.random() * 7 + 1), 80);
 
@@ -173,14 +161,15 @@
             window.speechSynthesis.speak(ut);
         }
 
+        // --- VOICE INPUT (Supports both BN/EN recognition) ---
         const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
         const rec = Rec ? new Rec() : null;
         if(rec) {
-            rec.lang = STATE.lang;
+            rec.lang = 'bn-BD'; // Recognition can stay Bengali or switched
             rec.onstart = () => updateUI('LISTENING');
             rec.onresult = (e) => {
                 const txt = e.results[0][0].transcript;
-                document.getElementById('user-transcript').innerText = txt;
+                document.getElementById('user-transcript').innerText = "You: " + txt;
                 callAI(txt);
             };
             rec.onend = () => { if(STATE.listening && !STATE.speaking) setTimeout(() => { try{rec.start()}catch(e){} }, 300); };
@@ -188,26 +177,24 @@
 
         function toggleMic() {
             STATE.listening = !STATE.listening;
-            if(STATE.listening) { rec.lang = STATE.lang; rec.start(); }
-            else { rec.stop(); updateUI('STANDBY'); }
+            STATE.listening ? rec.start() : (rec.stop(), updateUI('STANDBY'));
         }
 
         function sendText() {
             const input = document.getElementById('text-input');
             if(!input.value.trim()) return;
-            document.getElementById('user-transcript').innerText = input.value;
+            document.getElementById('user-transcript').innerText = "You: " + input.value;
             callAI(input.value);
             input.value = '';
             input.blur();
         }
 
-        // --- UI HELPERS ---
         function updateUI(status) {
             const icon = document.getElementById('mic-icon');
             document.body.classList.toggle('is-talking', status === 'SPEAKING');
             if (status === 'LISTENING') icon.className = "fas fa-microphone text-indigo-600";
             else if (status === 'SPEAKING') icon.className = "fas fa-volume-up text-green-500";
-            else if (status === 'THINKING') icon.className = "fas fa-circle-notch fa-spin text-orange-500";
+            else if (status === 'THINKING') icon.className = "fas fa-spinner fa-spin text-orange-500";
             else icon.className = "fas fa-microphone text-gray-300";
         }
 
@@ -229,7 +216,6 @@
         window.onload = () => {
             document.getElementById('api-key').value = STATE.config.key;
             document.getElementById('model-profile').value = STATE.config.model;
-            document.getElementById('lang-tag').innerText = STATE.lang.toUpperCase();
             
             const bubble = document.getElementById('speech-bubble');
             let px=0, py=0, ix, iy;
