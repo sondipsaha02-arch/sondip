@@ -1,238 +1,197 @@
 <!DOCTYPE html>
-<html lang="bn" class="light">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Cat | OpenRouter Full Edition</title>
-    
+    <title>AI Cat | Settings & Voice</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: { extend: { colors: { primary: '#6366f1', dark: '#0f172a' } } }
-        }
-    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
-        body { font-family: 'Inter', sans-serif; overflow: hidden; height: 100dvh; background: #f1f5f9; touch-action: none; }
+        body { font-family: 'Inter', sans-serif; overflow: hidden; height: 100dvh; background: #f3f4f6; touch-action: none; }
+        #sidebar { transition: transform 0.3s ease; z-index: 1000; }
+        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; }
         
-        #sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; }
-        #overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 900; }
-
-        /* Voice Waves */
+        /* Cat Animation */
+        #cat-stage { transform-origin: bottom center; cursor: pointer; }
+        .is-talking #head-group { animation: tilt 0.5s infinite alternate; }
+        @keyframes tilt { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+        
+        .eye-lid { transform-origin: center; transition: transform 0.1s; }
+        .blink .eye-lid { transform: scaleY(0.1); }
+        
+        /* Listening Wave */
         .wave-container { position: absolute; width: 300px; height: 300px; display: none; justify-content: center; align-items: center; pointer-events: none; }
         .is-listening .wave-container { display: flex; }
         .wave { position: absolute; border: 2px solid #6366f1; opacity: 0; border-radius: 50%; animation: ripple 2s infinite; }
-        .wave:nth-child(2) { animation-delay: 0.5s; }
-        .wave:nth-child(3) { animation-delay: 1s; }
         @keyframes ripple { 0% { width: 100px; height: 100px; opacity: 0.8; } 100% { width: 400px; height: 400px; opacity: 0; } }
 
-        /* Cat Animations */
-        #cat-stage { transform-origin: bottom center; cursor: pointer; }
-        .is-talking #head-group { animation: talk-shake 0.4s infinite alternate; }
-        @keyframes talk-shake { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
-        .eye-lid { transform-origin: center; transition: transform 0.1s; }
-        .blink .eye-lid { transform: scaleY(0.1); }
-
-        /* Draggable UI */
-        #speech-bubble { position: absolute; z-index: 100; width: 85vw; max-width: 320px; pointer-events: auto; }
+        #speech-bubble { position: absolute; z-index: 100; width: 85vw; max-width: 320px; touch-action: none; }
     </style>
 </head>
-<body class="dark:bg-dark transition-colors duration-500">
+<body class="bg-gray-100">
 
     <div id="overlay" onclick="toggleSidebar()"></div>
 
-    <div id="app" class="flex h-full relative overflow-hidden">
-        
-        <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-slate-900 shadow-2xl transform -translate-x-full">
-            <div class="p-6 h-full flex flex-col">
-                <div class="flex justify-between items-center mb-8">
-                    <span class="font-black text-primary italic">VOICE SETTINGS</span>
-                    <button onclick="toggleSidebar()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl transform -translate-x-full">
+        <div class="p-6 h-full flex flex-col">
+            <h2 class="text-xl font-black text-indigo-600 mb-8 tracking-tighter italic">CAT SETTINGS</h2>
+            
+            <div class="space-y-5 flex-1">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">OpenRouter API Key</label>
+                    <input type="password" id="api-key" placeholder="sk-or-..." class="w-full mt-1 p-3 bg-gray-100 rounded-xl border-none text-sm outline-none focus:ring-2 ring-indigo-500">
                 </div>
 
-                <div class="space-y-6 flex-1 overflow-y-auto">
-                    <div>
-                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">OpenRouter API Key</label>
-                        <input type="password" id="api-key" placeholder="sk-or-..." class="w-full mt-2 p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-sm focus:ring-2 ring-primary">
-                    </div>
-
-                    <div>
-                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Model Profile (ID)</label>
-                        <input type="text" id="model-profile" placeholder="google/gemini-2.0-flash-exp:free" class="w-full mt-2 p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-sm focus:ring-2 ring-primary">
-                        <p class="text-[9px] text-gray-500 mt-1">E.g., google/gemini-flash-1.5-8b</p>
-                    </div>
-
-                    <div>
-                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Choose Voice</label>
-                        <select id="voice-select" class="w-full mt-2 p-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-none text-xs"></select>
-                    </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Model Profile (ID)</label>
+                    <input type="text" id="model-profile" placeholder="google/gemini-2.0-flash-exp:free" class="w-full mt-1 p-3 bg-gray-100 rounded-xl border-none text-sm outline-none focus:ring-2 ring-indigo-500">
+                    <p class="text-[9px] text-gray-400 mt-1 italic">Example: google/gemini-flash-1.5-8b</p>
                 </div>
-
-                <button onclick="saveSettings()" class="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-lg mt-6 active:scale-95 transition-all">Save & Start Conversation</button>
             </div>
-        </aside>
 
-        <main class="flex-1 flex flex-col relative">
-            <header class="p-6 flex justify-between items-center z-50">
-                <button onclick="toggleSidebar()" class="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl shadow-md flex items-center justify-center">
-                    <i class="fas fa-bars-staggered text-primary"></i>
-                </button>
-                <div class="flex items-center gap-2 bg-white/50 px-3 py-1 rounded-full text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                    <div id="led" class="w-2 h-2 rounded-full bg-gray-300"></div>
-                    <span id="status-text">Standby</span>
+            <button onclick="saveSettings()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-all">Save & Close</button>
+        </div>
+    </aside>
+
+    <main class="flex flex-col h-full relative">
+        <header class="p-6 flex justify-between items-center z-50">
+            <button onclick="toggleSidebar()" class="w-10 h-10 bg-white rounded-xl shadow-md flex items-center justify-center text-indigo-600">
+                <i class="fas fa-cog"></i>
+            </button>
+            <div id="status-chip" class="px-4 py-1 bg-white rounded-full shadow-sm text-[10px] font-bold text-gray-400 uppercase tracking-widest border border-gray-100">Standby</div>
+        </header>
+
+        <div class="flex-1 flex flex-col items-center justify-center relative">
+            <div class="wave-container"><div class="wave"></div><div class="wave"></div></div>
+
+            <div id="speech-bubble" style="left: 20px; top: 120px;">
+                <div class="bg-white/80 backdrop-blur-md p-5 rounded-[2.5rem] shadow-xl border border-white">
+                    <div id="drag-handle" class="w-10 h-1 bg-gray-200 mx-auto mb-3 rounded-full cursor-move"></div>
+                    <p id="user-transcript" class="text-indigo-600 font-bold text-lg mb-1"></p>
+                    <p id="ai-caption" class="text-gray-500 text-sm italic"></p>
                 </div>
-            </header>
+            </div>
 
-            <div class="flex-1 flex flex-col items-center justify-center relative">
-                
-                <div class="wave-container"><div class="wave"></div><div class="wave"></div><div class="wave"></div></div>
-
-                <div id="speech-bubble" style="left: 20px; top: 100px;">
-                    <div class="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-5 rounded-[2.5rem] shadow-2xl border border-white/20">
-                        <div id="drag-handle" class="w-12 h-1 bg-gray-200 dark:bg-gray-700 mx-auto mb-3 rounded-full cursor-move"></div>
-                        <p id="user-transcript" class="text-primary font-bold text-lg mb-1 min-h-[1.5rem]"></p>
-                        <p id="ai-caption" class="text-gray-400 text-sm italic font-medium"></p>
-                    </div>
-                </div>
-
-                <div id="cat-stage" onpointerdown="handleCatTouch()">
-                    <svg viewBox="0 0 200 200" class="w-72 h-72 sm:w-80 sm:h-80 lg:w-[480px]">
-                        <path d="M40 190 Q100 160 160 190 L170 200 L30 200 Z" fill="#4f46e5" />
-                        <g id="head-group">
-                            <path id="ear-l" d="M55 45 L35 10 L75 35 Z" fill="#4338ca" />
-                            <path id="ear-r" d="M145 45 L165 10 L125 35 Z" fill="#4338ca" />
-                            <circle cx="100" cy="100" r="80" fill="#6366f1" />
-                            <circle cx="100" cy="110" r="62" fill="#e0e7ff" />
-                            <g id="eyes">
-                                <circle class="eye-lid" cx="78" cy="105" r="7" fill="#1e293b" />
-                                <circle class="eye-lid" cx="122" cy="105" r="7" fill="#1e293b" />
-                            </g>
-                            <ellipse id="mouth-path" cx="100" cy="138" rx="12" ry="1" fill="#1e293b" />
+            <div id="cat-stage" onclick="handleTouch()">
+                <svg viewBox="0 0 200 200" class="w-72 h-72 sm:w-80 sm:h-80 lg:w-[450px]">
+                    <path d="M40 190 Q100 160 160 190 L170 200 L30 200 Z" fill="#4f46e5" />
+                    <g id="head-group">
+                        <path id="ear-l" d="M55 45 L35 10 L75 35 Z" fill="#4338ca" />
+                        <path id="ear-r" d="M145 45 L165 10 L125 35 Z" fill="#4338ca" />
+                        <circle cx="100" cy="100" r="80" fill="#6366f1" />
+                        <circle cx="100" cy="110" r="62" fill="#e0e7ff" />
+                        <g id="eyes">
+                            <circle class="eye-lid" cx="78" cy="105" r="7" fill="#1e293b" />
+                            <circle class="eye-lid" cx="122" cy="105" r="7" fill="#1e293b" />
                         </g>
-                    </svg>
-                </div>
-
-                <div class="absolute bottom-10 flex flex-col items-center gap-4">
-                    <button id="mic-btn" onclick="toggleVoiceMode()" class="w-20 h-20 rounded-full bg-white dark:bg-gray-800 shadow-2xl flex items-center justify-center text-2xl border-4 border-transparent transition-all">
-                        <i id="mic-icon" class="fas fa-microphone text-gray-300"></i>
-                    </button>
-                    <p id="mic-instruction" class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Tap to start talking</p>
-                </div>
+                        <ellipse id="mouth-path" cx="100" cy="138" rx="12" ry="1" fill="#1e293b" />
+                    </g>
+                </svg>
             </div>
-        </main>
-    </div>
+
+            <div class="absolute bottom-10 flex flex-col items-center gap-3">
+                <button id="mic-btn" onclick="toggleMic()" class="w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center text-xl transition-all">
+                    <i id="mic-icon" class="fas fa-microphone text-gray-300"></i>
+                </button>
+                <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Continuous Mode</p>
+            </div>
+        </div>
+    </main>
 
     <script>
         const STATE = {
-            active: false,
-            speaking: false,
+            isListening: false,
+            isSpeaking: false,
             config: { 
                 key: localStorage.getItem('cat_key') || '', 
-                model: localStorage.getItem('cat_model') || 'google/gemini-2.0-flash-exp:free' 
+                profile: localStorage.getItem('cat_profile') || 'google/gemini-flash-1.5-8b' 
             }
         };
 
-        // --- CONTINUOUS VOICE ENGINE ---
-        function setupRecognition() {
-            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRec) return;
-
-            STATE.recognition = new SpeechRec();
-            STATE.recognition.lang = 'bn-BD';
-            STATE.recognition.onstart = () => updateUI('LISTENING');
-            STATE.recognition.onresult = (e) => {
+        // --- SPEECH RECOGNITION ---
+        const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const rec = Recognition ? new Recognition() : null;
+        if(rec) {
+            rec.lang = 'bn-BD';
+            rec.continuous = false;
+            rec.onstart = () => updateUI('LISTENING');
+            rec.onresult = (e) => {
                 const text = e.results[0][0].transcript;
                 document.getElementById('user-transcript').innerText = text;
-                sendToAI(text);
+                callOpenRouter(text);
             };
-            STATE.recognition.onend = () => {
-                if (STATE.active && !STATE.speaking) {
-                    setTimeout(() => { try { STATE.recognition.start(); } catch(e) {} }, 300);
+            rec.onend = () => {
+                if (STATE.isListening && !STATE.isSpeaking) {
+                    setTimeout(() => { try { rec.start(); } catch(e){} }, 300);
                 }
             };
         }
 
-        async function sendToAI(text) {
-            if (!STATE.config.key) return alert("Settings-e API Key ebong Model Profile din!");
+        async function callOpenRouter(text) {
+            if (!STATE.config.key) return alert("Please add API Key in Settings!");
             updateUI('THINKING');
             try {
                 const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: { "Authorization": `Bearer ${STATE.config.key}`, "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        model: STATE.config.model,
-                        messages: [{ role: 'system', content: 'You are a cute AI cat. Reply in one short sentence in Bengali.' }, { role: 'user', content: text }]
+                        model: STATE.config.profile,
+                        messages: [{ role: 'system', content: 'You are a cat. One short sentence answer.' }, { role: 'user', content: text }]
                     })
                 });
                 const data = await res.json();
                 const reply = data.choices[0].message.content;
                 document.getElementById('ai-caption').innerText = reply;
                 speak(reply);
-            } catch (e) { updateUI('STANDBY'); }
+            } catch (err) { updateUI('STANDBY'); }
         }
 
         function speak(text) {
-            STATE.speaking = true;
-            STATE.recognition.stop();
+            STATE.isSpeaking = true;
+            rec.stop();
             updateUI('SPEAKING');
 
             const ut = new SpeechSynthesisUtterance(text);
             ut.lang = 'bn-BD';
             const mouth = document.getElementById('mouth-path');
-            const mInt = setInterval(() => mouth.setAttribute('ry', Math.random() * 8 + 1), 80);
+            const anim = setInterval(() => mouth.setAttribute('ry', Math.random() * 8 + 1), 80);
 
             ut.onend = () => {
-                STATE.speaking = false;
-                clearInterval(mInt);
+                STATE.isSpeaking = false;
+                clearInterval(anim);
                 mouth.setAttribute('ry', '1');
-                if (STATE.active) STATE.recognition.start();
+                if (STATE.isListening) rec.start();
             };
             window.speechSynthesis.speak(ut);
         }
 
-        // --- UI & LOGIC ---
-        function updateUI(mode) {
-            const app = document.getElementById('app');
-            const led = document.getElementById('led');
-            const icon = document.getElementById('mic-icon');
-            const status = document.getElementById('status-text');
-            const inst = document.getElementById('mic-instruction');
-
-            app.classList.remove('is-listening', 'is-talking');
-            led.className = "w-2 h-2 rounded-full bg-gray-300";
-
-            if (mode === 'LISTENING') {
-                app.classList.add('is-listening');
-                led.classList.add('bg-green-500', 'animate-pulse');
-                icon.className = "fas fa-microphone text-primary";
-                status.innerText = "Listening...";
-                inst.innerText = "I am listening...";
-            } else if (mode === 'SPEAKING') {
-                app.classList.add('is-talking');
-                led.classList.add('bg-blue-500');
-                icon.className = "fas fa-comment text-indigo-400";
-                status.innerText = "Talking...";
-            } else if (mode === 'THINKING') {
-                icon.className = "fas fa-circle-notch fa-spin text-primary";
-                status.innerText = "Thinking...";
-            } else {
-                icon.className = "fas fa-microphone text-gray-300";
-                status.innerText = "Standby";
-                inst.innerText = "Tap to start talking";
-            }
+        // --- INTERFACE ---
+        function toggleMic() {
+            if(!rec) return alert("Voice not supported");
+            STATE.isListening = !STATE.isListening;
+            STATE.isListening ? rec.start() : (rec.stop(), updateUI('STANDBY'));
         }
 
-        function toggleVoiceMode() {
-            STATE.active = !STATE.active;
-            if (STATE.active) {
-                if (!STATE.recognition) setupRecognition();
-                STATE.recognition.start();
+        function updateUI(status) {
+            const body = document.body;
+            const icon = document.getElementById('mic-icon');
+            const chip = document.getElementById('status-chip');
+            body.classList.remove('is-listening', 'is-talking');
+
+            if (status === 'LISTENING') {
+                body.classList.add('is-listening');
+                icon.className = "fas fa-microphone text-indigo-600";
+                chip.innerText = "Listening...";
+            } else if (status === 'SPEAKING') {
+                body.classList.add('is-talking');
+                icon.className = "fas fa-comment text-green-500";
+                chip.innerText = "Talking...";
+            } else if (status === 'THINKING') {
+                icon.className = "fas fa-spinner fa-spin text-indigo-600";
+                chip.innerText = "Thinking...";
             } else {
-                STATE.recognition.stop();
-                window.speechSynthesis.cancel();
-                updateUI('STANDBY');
+                icon.className = "fas fa-microphone text-gray-300";
+                chip.innerText = "Standby";
             }
         }
 
@@ -246,25 +205,23 @@
 
         function saveSettings() {
             STATE.config.key = document.getElementById('api-key').value;
-            STATE.config.model = document.getElementById('model-profile').value;
+            STATE.config.profile = document.getElementById('model-profile').value;
             localStorage.setItem('cat_key', STATE.config.key);
-            localStorage.setItem('cat_model', STATE.config.model);
+            localStorage.setItem('cat_profile', STATE.config.profile);
             toggleSidebar();
-            alert("Settings Saved! Conversation start korte mic-e click korun.");
         }
 
-        function handleCatTouch() {
-            if (navigator.vibrate) navigator.vibrate(40);
-            const eyes = document.getElementById('eyes');
-            eyes.classList.add('blink');
-            setTimeout(() => eyes.classList.remove('blink'), 500);
+        function handleTouch() {
+            if (navigator.vibrate) navigator.vibrate(50);
+            document.getElementById('eyes').classList.add('blink');
+            setTimeout(() => document.getElementById('eyes').classList.remove('blink'), 400);
         }
 
         window.onload = () => {
             document.getElementById('api-key').value = STATE.config.key;
-            document.getElementById('model-profile').value = STATE.config.model;
+            document.getElementById('model-profile').value = STATE.config.profile;
             
-            // Draggable Speech Bubble
+            // Drag Logic
             const bubble = document.getElementById('speech-bubble');
             let px = 0, py = 0, ix, iy;
             bubble.onpointerdown = (e) => {
@@ -277,7 +234,6 @@
                 document.onpointerup = () => document.onpointermove = null;
             };
 
-            // Natural Blink
             setInterval(() => {
                 document.getElementById('eyes').classList.add('blink');
                 setTimeout(() => document.getElementById('eyes').classList.remove('blink'), 150);
